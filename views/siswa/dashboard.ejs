@@ -1,97 +1,193 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard Siswa - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+  <!-- Custom CSS -->
+  <style>
+    .welcome-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .welcome-card .card-body {
+      padding: 2rem;
+    }
+    .welcome-card h2 {
+      font-size: 2.5rem;
+    }
+    .welcome-card p {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .stat-card {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
 </head>
+
 <body class="hold-transition sidebar-mini">
-<div class="wrapper">
+  <div class="wrapper">
 
-  <%- include('partials/navigation') %>
+    <%- include('partials/navigation') %>
 
-  <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Dashboard Siswa</h1>
+      <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>Dashboard Siswa</h1>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <section class="content">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-lg-3 col-6">
+                <div class="stat-card small-box bg-info">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Jumlah Mata Pelajaran</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-book"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="stat-card small-box bg-success">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Ujian Selesai</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-check-circle"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="stat-card small-box bg-warning">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Ujian Mendatang</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-calendar-alt"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="stat-card small-box bg-danger">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Nilai Rata-rata</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-chart-bar"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <div class="welcome-card card">
+                  <div class="card-header">
+                    <h3 class="card-title"><h2>Informasi Kelas</h2></h3>
+                  </div>
+                  <div class="card-body">
+                    <% if (kelas) { %>
+                      <p>Kelas: <%= kelas.kelas %>
+                          <%= kelas.kelas_minor %>
+                      </p>
+                      <p>Tahun: <%= kelas.tahun %>
+                      </p>
+                      <% } else { %>
+                        <p>Belum ada informasi kelas.</p>
+                        <% } %>
+                          <button type="button" class="btn btn-warning" data-toggle="modal"
+                            data-target="#updateKelasModal">
+                            Update Kelas
+                          </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Jumlah Mata Pelajaran</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-book"></i>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Ujian Selesai</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-check-circle"></i>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Ujian Mendatang</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-calendar-alt"></i>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Nilai Rata-rata</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-chart-bar"></i>
-              </div>
-            </div>
-          </div>
+      <footer class="main-footer">
+        <div class="float-right d-none d-sm-inline">
+          Sistem Ujian Sekolah
         </div>
-      </div>
-    </section>
+      </footer>
   </div>
 
-  <footer class="main-footer">
-    <div class="float-right d-none d-sm-inline">
-      Sistem Ujian Sekolah
-    </div>
-  </footer>
-</div>
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 
-<!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+  <!-- Modal -->
+  <div class="modal fade" id="updateKelasModal" tabindex="-1" role="dialog" aria-labelledby="updateKelasModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateKelasModalLabel">Update Kelas</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="/siswa/update-kelas" method="POST">
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="kelas">Kelas</label>
+              <input type="text" class="form-control" id="kelas" name="kelas" required>
+            </div>
+            <div class="form-group">
+              <label for="kelas_minor">Kelas Minor</label>
+              <select class="form-control" id="kelas_minor" name="kelas_minor" required>
+                <option value="">Pilih Kelas Minor</option>
+                <% ['A', 'B' , 'C' , 'D' , 'E' , 'F' , 'G' , 'H' , 'I' , 'J' ].forEach(function(letter) { %>
+                  <option value="<%= letter %>">
+                    <%= letter %>
+                  </option>
+                  <% }); %>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tahun">Tahun</label>
+              <input type="number" class="form-control" id="tahun" name="tahun" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </body>
+
 </html>

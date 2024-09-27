@@ -4,7 +4,7 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // Konfigurasi database
 const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
@@ -33,6 +33,14 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       password TEXT,
       id_sekolah INTEGER
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS kelas_siswa (
+      id_kelas_siswa INTEGER PRIMARY KEY AUTOINCREMENT,
+      nis TEXT,
+      kelas TEXT,
+      kelas_minor TEXT,
+      tahun INTEGER,
+      FOREIGN KEY (nis) REFERENCES siswa(nis)
+    )`);
     db.run(`CREATE TABLE IF NOT EXISTS sekolah (
       id_sekolah INTEGER PRIMARY KEY AUTOINCREMENT,
       npsn TEXT,
@@ -40,6 +48,39 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       alamat TEXT,
       kab_kota TEXT,
       provinsi TEXT
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS kelas (
+      id_kelas INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_guru INTEGER,
+      id_sekolah INTEGER,
+      kelas TEXT,
+      minor_kelas TEXT,
+      tahun INTEGER,
+      FOREIGN KEY (id_guru) REFERENCES guru(id_guru),
+      FOREIGN KEY (id_sekolah) REFERENCES sekolah(id_sekolah)
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS mata_pelajaran (
+      id_mapel INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_kelas INTEGER,
+      nama_mapel TEXT,
+      FOREIGN KEY (id_kelas) REFERENCES kelas(id_kelas)
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS ujian (
+      id_ujian INTEGER PRIMARY KEY AUTOINCREMENT,
+      judul_ujian TEXT,
+      waktu_mulai DATETIME,
+      waktu_selesai DATETIME,
+      id_kelas INTEGER,
+      id_mapel INTEGER
+    )`);
+    db.run(`CREATE TABLE IF NOT EXISTS soal (
+      id_soal INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_ujian INTEGER,
+      jenis_soal TEXT,
+      soal TEXT,
+      pilihan_ganda TEXT,
+      kunci_jawaban TEXT,
+      FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian)
     )`);
   }
 });
@@ -58,7 +99,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.get('/', (req, res) => {
-  res.render('login');
+  db.all('SELECT id_sekolah, nama_sekolah FROM sekolah', [], (err, schools) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('login', { schools: schools });
+  });
 });
 
 app.post('/login', (req, res) => {
@@ -108,6 +155,21 @@ app.post('/login', (req, res) => {
   });
 });
 
+app.post('/register', (req, res) => {
+  const { fullname, nis, password, id_sekolah } = req.body;
+  
+  db.run('INSERT INTO siswa (fullname, nis, password, id_sekolah) VALUES (?, ?, ?, ?)',
+    [fullname, nis, password, id_sekolah],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/');
+    }
+  );
+});
+
 app.get('/admin/dashboard', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
@@ -120,7 +182,13 @@ app.get('/admin/users', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
-  db.all('SELECT * FROM guru UNION SELECT * FROM siswa UNION SELECT * FROM admin', [], (err, rows) => {
+  db.all(`
+    SELECT id_guru AS id, fullname, username, 'guru' AS user_type, id_sekolah, nip, NULL AS nis, 'guru' AS id_type FROM guru
+    UNION ALL
+    SELECT id_siswa AS id, fullname, nis AS username, 'siswa' AS user_type, id_sekolah, NULL AS nip, nis, 'siswa' AS id_type FROM siswa
+    UNION ALL
+    SELECT id_admin AS id, fullname, username, 'admin' AS user_type, NULL AS id_sekolah, NULL AS nip, NULL AS nis, 'admin' AS id_type FROM admin
+  `, [], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -193,7 +261,14 @@ app.get('/admin/users/edit/:id/:type', (req, res) => {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    res.render('admin/edit_user', { user: req.session.user, editUser: row, userType: type });
+    // Fetch schools for dropdown
+    db.all('SELECT id_sekolah, nama_sekolah FROM sekolah', [], (err, schools) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('admin/edit_user', { user: req.session.user, editUser: row, userType: type, schools: schools });
+    });
   });
 });
 
@@ -207,16 +282,31 @@ app.post('/admin/users/edit/:id/:type', (req, res) => {
 
   switch (type) {
     case 'guru':
-      query = 'UPDATE guru SET fullname = ?, username = ?, password = ?, id_sekolah = ?, nip = ? WHERE id_guru = ?';
-      params = [fullname, username, password, id_sekolah, nip, id];
+      if (password) {
+        query = 'UPDATE guru SET fullname = ?, username = ?, password = ?, id_sekolah = ?, nip = ? WHERE id_guru = ?';
+        params = [fullname, username, password, id_sekolah, nip, id];
+      } else {
+        query = 'UPDATE guru SET fullname = ?, username = ?, id_sekolah = ?, nip = ? WHERE id_guru = ?';
+        params = [fullname, username, id_sekolah, nip, id];
+      }
       break;
     case 'siswa':
-      query = 'UPDATE siswa SET fullname = ?, nis = ?, password = ?, id_sekolah = ? WHERE id_siswa = ?';
-      params = [fullname, nis, password, id_sekolah, id];
+      if (password) {
+        query = 'UPDATE siswa SET fullname = ?, nis = ?, password = ?, id_sekolah = ? WHERE id_siswa = ?';
+        params = [fullname, nis, password, id_sekolah, id];
+      } else {
+        query = 'UPDATE siswa SET fullname = ?, nis = ?, id_sekolah = ? WHERE id_siswa = ?';
+        params = [fullname, nis, id_sekolah, id];
+      }
       break;
     case 'admin':
-      query = 'UPDATE admin SET fullname = ?, username = ?, password = ? WHERE id_admin = ?';
-      params = [fullname, username, password, id];
+      if (password) {
+        query = 'UPDATE admin SET fullname = ?, username = ?, password = ? WHERE id_admin = ?';
+        params = [fullname, username, password, id];
+      } else {
+        query = 'UPDATE admin SET fullname = ?, username = ? WHERE id_admin = ?';
+        params = [fullname, username, id];
+      }
       break;
     default:
       return res.status(400).send('Invalid user type');
@@ -345,14 +435,545 @@ app.get('/guru/dashboard', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'guru') {
     return res.redirect('/');
   }
-  res.render('guru/dashboard', { user: req.session.user });
+  
+  db.get('SELECT g.*, s.nama_sekolah FROM guru g JOIN sekolah s ON g.id_sekolah = s.id_sekolah WHERE g.id_guru = ?', 
+    [req.session.user.id], 
+    (err, row) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('guru/dashboard', { user: row });
+    }
+  );
+});
+
+app.get('/guru/ujian', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  db.all(`
+    SELECT u.id_ujian, k.kelas, k.minor_kelas, m.nama_mapel, u.waktu_mulai, u.waktu_selesai
+    FROM ujian u
+    JOIN kelas k ON u.id_kelas = k.id_kelas
+    JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+    WHERE k.id_guru = ?
+    ORDER BY u.waktu_mulai DESC
+  `, [req.session.user.id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('guru/ujian', { user: req.session.user, ujianList: rows });
+  });
+});
+
+// Rute untuk menampilkan daftar soal
+app.get('/guru/ujian/:id/soal', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  db.all('SELECT * FROM soal WHERE id_ujian = ?', [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('guru/soal', { user: req.session.user, soalList: rows, id_ujian: id });
+  });
+});
+
+// Rute untuk menampilkan form tambah soal
+app.get('/guru/ujian/:id/soal/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  res.render('guru/add_soal', { user: req.session.user, id_ujian: id });
+});
+
+// Rute untuk memproses penambahan soal
+app.post('/guru/ujian/:id/soal/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda } = req.body;
+  let pilihan_ganda_json = null;
+  if (jenis_soal === 'pilihan_ganda') {
+    pilihan_ganda_json = JSON.stringify(pilihan_ganda);
+  }
+  const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
+  db.run('INSERT INTO soal (id_ujian, jenis_soal, soal, kunci_jawaban, pilihan_ganda) VALUES (?, ?, ?, ?, ?)',
+    [id, jenis_soal, soal, kunci, pilihan_ganda_json], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect(`/guru/ujian/${id}/soal`);
+  });
+});
+
+// Rute untuk menampilkan form edit soal
+app.get('/guru/ujian/:id_ujian/soal/edit/:id_soal', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_ujian, id_soal } = req.params;
+  db.get('SELECT * FROM soal WHERE id_soal = ? AND id_ujian = ?', [id_soal, id_ujian], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    if (row.jenis_soal === 'pilihan_ganda' && row.pilihan_ganda) {
+      row.pilihan_ganda = JSON.parse(row.pilihan_ganda);
+    }
+    res.render('guru/edit_soal', { user: req.session.user, soal: row, id_ujian });
+  });
+});
+
+// Rute untuk memproses edit soal
+app.post('/guru/ujian/:id_ujian/soal/edit/:id_soal', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_ujian, id_soal } = req.params;
+  const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda } = req.body;
+  let pilihan_ganda_json = null;
+  if (jenis_soal === 'pilihan_ganda') {
+    pilihan_ganda_json = JSON.stringify(pilihan_ganda);
+  }
+  const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
+  db.run('UPDATE soal SET jenis_soal = ?, soal = ?, kunci_jawaban = ?, pilihan_ganda = ? WHERE id_soal = ? AND id_ujian = ?',
+    [jenis_soal, soal, kunci, pilihan_ganda_json, id_soal, id_ujian], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect(`/guru/ujian/${id_ujian}/soal`);
+  });
+});
+
+// Rute untuk menghapus soal
+app.get('/guru/ujian/:id_ujian/soal/delete/:id_soal', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_ujian, id_soal } = req.params;
+  db.run('DELETE FROM soal WHERE id_soal = ? AND id_ujian = ?', [id_soal, id_ujian], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect(`/guru/ujian/${id_ujian}/soal`);
+  });
+});
+
+app.get('/guru/ujian/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  db.all(`
+    SELECT k.id_kelas, k.kelas, k.minor_kelas, m.id_mapel, m.nama_mapel
+    FROM kelas k
+    JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
+    WHERE k.id_guru = ?
+  `, [req.session.user.id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('guru/add_ujian', { user: req.session.user, kelasList: rows });
+  });
+});
+
+app.post('/guru/ujian/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel, judul_ujian, waktu_mulai, waktu_selesai } = req.body;
+  const [kelas_id, mapel_id] = id_kelas.split('|');
+  db.run('INSERT INTO ujian (id_kelas, id_mapel, judul_ujian, waktu_mulai, waktu_selesai) VALUES (?, ?, ?, ?, ?)',
+    [kelas_id, mapel_id, judul_ujian, waktu_mulai, waktu_selesai], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/guru/ujian');
+  });
+});
+
+app.get('/guru/ujian/edit/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  db.get('SELECT * FROM ujian WHERE id_ujian = ?', [id], (err, ujian) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    db.all(`
+      SELECT k.id_kelas, k.kelas, k.minor_kelas, m.id_mapel, m.nama_mapel
+      FROM kelas k
+      JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
+      WHERE k.id_guru = ?
+    `, [req.session.user.id], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('guru/edit_ujian', { user: req.session.user, ujian: ujian, kelasList: rows });
+    });
+  });
+});
+
+app.post('/guru/ujian/edit/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  const { id_kelas, judul_ujian, waktu_mulai, waktu_selesai } = req.body;
+  const [kelas_id, mapel_id] = id_kelas.split('|');
+  db.run('UPDATE ujian SET id_kelas = ?, id_mapel = ?, judul_ujian = ?, waktu_mulai = ?, waktu_selesai = ? WHERE id_ujian = ?',
+    [kelas_id, mapel_id, judul_ujian, waktu_mulai, waktu_selesai, id], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/guru/ujian');
+  });
+});
+
+app.get('/guru/ujian/delete/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  db.run('DELETE FROM ujian WHERE id_ujian = ?', [id], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/guru/ujian');
+  });
+});
+
+app.get('/guru/ujian/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  db.all('SELECT id_kelas, kelas, minor_kelas FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, kelas) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('guru/add_ujian', { user: req.session.user, kelas: kelas });
+  });
+});
+
+app.post('/guru/ujian/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, nama_mapel } = req.body;
+  db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel) VALUES (?, ?)', [id_kelas, nama_mapel], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/guru/ujian');
+  });
+});
+
+app.get('/guru/ujian/edit/:id_kelas/:id_mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel } = req.params;
+  db.get('SELECT * FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], (err, mapel) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    db.all('SELECT id_kelas, kelas, minor_kelas FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, kelas) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('guru/edit_ujian', { user: req.session.user, mapel: mapel, kelas: kelas });
+    });
+  });
+});
+
+app.post('/guru/ujian/edit/:id_kelas/:id_mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel } = req.params;
+  const { nama_mapel, new_id_kelas } = req.body;
+  db.run('UPDATE mata_pelajaran SET nama_mapel = ?, id_kelas = ? WHERE id_mapel = ? AND id_kelas = ?', 
+    [nama_mapel, new_id_kelas, id_mapel, id_kelas], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/guru/ujian');
+  });
+});
+
+app.get('/guru/ujian/delete/:id_kelas/:id_mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel } = req.params;
+  db.run('DELETE FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/guru/ujian');
+  });
+});
+
+app.get('/guru/kelas', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  // Ambil daftar kelas dari database
+  db.all('SELECT * FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('guru/kelas', { user: req.session.user, kelas: rows });
+  });
+});
+
+app.get('/guru/kelas/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  res.render('guru/add_kelas', { user: req.session.user });
+});
+
+app.post('/guru/kelas/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { kelas, minor_kelas, tahun } = req.body;
+  db.run('INSERT INTO kelas (id_guru, id_sekolah, kelas, minor_kelas, tahun) VALUES (?, ?, ?, ?, ?)',
+    [req.session.user.id, req.session.user.id_sekolah, kelas, minor_kelas, tahun],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/guru/kelas');
+    });
+});
+
+app.get('/guru/kelas/edit/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  db.get('SELECT * FROM kelas WHERE id_kelas = ? AND id_guru = ?', [id, req.session.user.id], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    if (!row) {
+      return res.status(404).send('Kelas tidak ditemukan');
+    }
+    res.render('guru/edit_kelas', { user: req.session.user, kelas: row });
+  });
+});
+
+app.post('/guru/kelas/edit/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  const { kelas, minor_kelas, tahun } = req.body;
+  db.run('UPDATE kelas SET kelas = ?, minor_kelas = ?, tahun = ? WHERE id_kelas = ? AND id_guru = ?',
+    [kelas, minor_kelas, tahun, id, req.session.user.id],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/guru/kelas');
+    });
+});
+
+app.get('/guru/kelas/delete/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  
+  // Periksa apakah ada mata pelajaran dalam kelas ini
+  db.get('SELECT COUNT(*) as count FROM mata_pelajaran WHERE id_kelas = ?', [id], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    
+    if (row.count > 0) {
+      // Jika ada mata pelajaran, kirim pesan error
+      return res.status(400).send('Tidak dapat menghapus kelas karena masih ada mata pelajaran terkait.');
+    }
+    
+    // Jika tidak ada mata pelajaran, lanjutkan dengan penghapusan kelas
+    db.run('DELETE FROM kelas WHERE id_kelas = ? AND id_guru = ?', [id, req.session.user.id], function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/guru/kelas');
+    });
+  });
+});
+
+app.get('/guru/kelas/:id/mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  db.all('SELECT * FROM mata_pelajaran WHERE id_kelas = ?', [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('guru/mapel', { user: req.session.user, mapel: rows, id_kelas: id });
+  });
+});
+
+app.get('/guru/kelas/:id/mapel/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  res.render('guru/add_mapel', { user: req.session.user, id_kelas: id });
+});
+
+app.post('/guru/kelas/:id/mapel/add', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  const { nama_mapel } = req.body;
+  db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel) VALUES (?, ?)',
+    [id, nama_mapel],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect(`/guru/kelas/${id}/mapel`);
+    });
+});
+
+app.get('/guru/kelas/:id_kelas/mapel/edit/:id_mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel } = req.params;
+  db.get('SELECT * FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    if (!row) {
+      return res.status(404).send('Mata pelajaran tidak ditemukan');
+    }
+    res.render('guru/edit_mapel', { user: req.session.user, mapel: row, id_kelas });
+  });
+});
+
+app.post('/guru/kelas/:id_kelas/mapel/edit/:id_mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel } = req.params;
+  const { nama_mapel } = req.body;
+  db.run('UPDATE mata_pelajaran SET nama_mapel = ? WHERE id_mapel = ? AND id_kelas = ?',
+    [nama_mapel, id_mapel, id_kelas],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect(`/guru/kelas/${id_kelas}/mapel`);
+    });
+});
+
+app.get('/guru/kelas/:id_kelas/mapel/delete/:id_mapel', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_kelas, id_mapel } = req.params;
+  db.run('DELETE FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect(`/guru/kelas/${id_kelas}/mapel`);
+  });
 });
 
 app.get('/siswa/dashboard', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
   }
-  res.render('siswa/dashboard', { user: req.session.user });
+  db.get('SELECT * FROM kelas_siswa WHERE nis = ?', [req.session.user.username], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('siswa/dashboard', { user: req.session.user, kelas: row });
+  });
+});
+
+app.post('/siswa/update-kelas', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.redirect('/');
+  }
+  const { kelas, kelas_minor, tahun } = req.body;
+  const nis = req.session.user.username;
+
+  // Cek apakah data kelas siswa sudah ada
+  db.get('SELECT * FROM kelas_siswa WHERE nis = ?', [nis], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+
+    if (row) {
+      // Jika data sudah ada, lakukan update
+      db.run('UPDATE kelas_siswa SET kelas = ?, kelas_minor = ?, tahun = ? WHERE nis = ?',
+        [kelas, kelas_minor, tahun, nis],
+        function(err) {
+          if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+          }
+          res.redirect('/siswa/dashboard');
+        });
+    } else {
+      // Jika data belum ada, tambahkan baru
+      db.run('INSERT INTO kelas_siswa (nis, kelas, kelas_minor, tahun) VALUES (?, ?, ?, ?)',
+        [nis, kelas, kelas_minor, tahun],
+        function(err) {
+          if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+          }
+          res.redirect('/siswa/dashboard');
+        });
+    }
+  });
 });
 
 app.get('/logout', (req, res) => {

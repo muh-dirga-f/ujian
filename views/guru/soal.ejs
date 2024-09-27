@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manajemen Pengguna - Sistem Ujian Sekolah</title>
+  <title>Manajemen Soal - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Manajemen Pengguna</h1>
+            <h1>Manajemen Soal</h1>
           </div>
         </div>
       </div>
@@ -34,10 +34,10 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Daftar Pengguna</h3>
+                <h3 class="card-title">Daftar Soal</h3>
                 <div class="card-tools">
-                  <a href="/admin/users/add" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Pengguna
+                  <a href="/guru/ujian/<%= id_ujian %>/soal/add" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Soal
                   </a>
                 </div>
               </div>
@@ -46,24 +46,22 @@
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Nama Lengkap</th>
-                      <th>Username/NIS</th>
-                      <th>Tipe</th>
+                      <th>Jenis Soal</th>
+                      <th>Soal</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% users.forEach(function(user) { %>
+                    <% soalList.forEach(function(soal) { %>
                       <tr>
-                        <td><%= user.id %></td>
-                        <td><%= user.fullname %></td>
-                        <td><%= user.username %></td>
-                        <td><%= user.user_type %></td>
+                        <td><%= soal.id_soal %></td>
+                        <td><%= soal.jenis_soal %></td>
+                        <td><%= soal.soal.substring(0, 50) %>...</td>
                         <td>
-                          <a href="/admin/users/edit/<%= user.id %>/<%= user.id_type %>" class="btn btn-info btn-sm">
+                          <a href="/guru/ujian/<%= id_ujian %>/soal/edit/<%= soal.id_soal %>" class="btn btn-info btn-sm">
                             <i class="fas fa-edit"></i> Edit
                           </a>
-                          <a href="/admin/users/delete/<%= user.id %>/<%= user.id_type %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                          <a href="/guru/ujian/<%= id_ujian %>/soal/delete/<%= soal.id_soal %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus soal ini?');">
                             <i class="fas fa-trash"></i> Hapus
                           </a>
                         </td>

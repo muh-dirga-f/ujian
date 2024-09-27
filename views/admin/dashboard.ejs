@@ -11,6 +11,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+  <!-- Custom CSS -->
+  <style>
+    .stat-card {
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -32,7 +43,7 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
+            <div class="stat-card small-box bg-info">
               <div class="inner">
                 <h3>1</h3>
                 <p>Jumlah Siswa</p>
@@ -43,7 +54,7 @@
             </div>
           </div>
           <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
+            <div class="stat-card small-box bg-success">
               <div class="inner">
                 <h3>1</h3>
                 <p>Jumlah Guru</p>
@@ -54,7 +65,7 @@
             </div>
           </div>
           <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
+            <div class="stat-card small-box bg-warning">
               <div class="inner">
                 <h3>1</h3>
                 <p>Jumlah Sekolah</p>
@@ -65,7 +76,7 @@
             </div>
           </div>
           <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
+            <div class="stat-card small-box bg-danger">
               <div class="inner">
                 <h3>0</h3>
                 <p>Jumlah Ujian</p>

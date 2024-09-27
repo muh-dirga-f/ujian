@@ -42,18 +42,32 @@
                     <label for="fullname">Nama Lengkap</label>
                     <input type="text" class="form-control" id="fullname" name="fullname" value="<%= editUser.fullname %>" required>
                   </div>
-                  <div class="form-group">
-                    <label for="username">Username/NIS</label>
-                    <input type="text" class="form-control" id="username" name="username" value="<%= editUser.username || editUser.nis %>" required>
-                  </div>
+                  <% if (userType === 'siswa') { %>
+                    <div class="form-group">
+                      <label for="nis">NIS</label>
+                      <input type="text" class="form-control" id="nis" name="nis" value="<%= editUser.nis %>" required>
+                    </div>
+                  <% } else { %>
+                    <div class="form-group">
+                      <label for="username">Username</label>
+                      <input type="text" class="form-control" id="username" name="username" value="<%= editUser.username %>" required>
+                    </div>
+                  <% } %>
                   <div class="form-group">
                     <label for="password">Password (Kosongkan jika tidak ingin mengubah)</label>
                     <input type="password" class="form-control" id="password" name="password">
                   </div>
                   <% if (userType === 'guru' || userType === 'siswa') { %>
                     <div class="form-group">
-                      <label for="id_sekolah">ID Sekolah</label>
-                      <input type="number" class="form-control" id="id_sekolah" name="id_sekolah" value="<%= editUser.id_sekolah %>" required>
+                      <label for="id_sekolah">Sekolah</label>
+                      <select class="form-control" id="id_sekolah" name="id_sekolah" required>
+                        <option value="">Pilih Sekolah</option>
+                        <% schools.forEach(function(school) { %>
+                          <option value="<%= school.id_sekolah %>" <%= editUser.id_sekolah == school.id_sekolah ? 'selected' : '' %>>
+                            <%= school.nama_sekolah %>
+                          </option>
+                        <% }); %>
+                      </select>
                     </div>
                   <% } %>
                   <% if (userType === 'guru') { %>

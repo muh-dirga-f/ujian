@@ -51,9 +51,13 @@
                       <option value="admin">Admin</option>
                     </select>
                   </div>
-                  <div class="form-group">
-                    <label for="username">Username/NIS</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
+                  <div class="form-group" id="username_group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username">
+                  </div>
+                  <div class="form-group" id="nis_group" style="display: none;">
+                    <label for="nis">NIS</label>
+                    <input type="text" class="form-control" id="nis" name="nis">
                   </div>
                   <div class="form-group">
                     <label for="password">Password</label>
@@ -100,8 +104,16 @@
       }
       if ($(this).val() === 'guru') {
         $('#nip_group').show();
+        $('#username_group').show();
+        $('#nis_group').hide();
+      } else if ($(this).val() === 'siswa') {
+        $('#nip_group').hide();
+        $('#username_group').hide();
+        $('#nis_group').show();
       } else {
         $('#nip_group').hide();
+        $('#username_group').show();
+        $('#nis_group').hide();
       }
     });
   });

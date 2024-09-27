@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tambah Soal - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Tambah Soal</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Form Tambah Soal</h3>
+              </div>
+              <div class="card-body">
+                <form action="/guru/ujian/<%= id_ujian %>/soal/add" method="POST">
+                  <div class="form-group">
+                    <label for="jenis_soal">Jenis Soal</label>
+                    <select class="form-control" id="jenis_soal" name="jenis_soal" required>
+                      <option value="">Pilih Jenis Soal</option>
+                      <option value="essay">Essay</option>
+                      <option value="pilihan_ganda">Pilihan Ganda</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="soal">Soal</label>
+                    <textarea class="form-control" id="soal" name="soal" rows="3" required></textarea>
+                  </div>
+                  <div id="pilihan_ganda_options" style="display: none;">
+                    <div class="form-group">
+                      <label for="pilihan_a">Pilihan A</label>
+                      <input type="text" class="form-control" id="pilihan_a" name="pilihan_ganda[a]">
+                    </div>
+                    <div class="form-group">
+                      <label for="pilihan_b">Pilihan B</label>
+                      <input type="text" class="form-control" id="pilihan_b" name="pilihan_ganda[b]">
+                    </div>
+                    <div class="form-group">
+                      <label for="pilihan_c">Pilihan C</label>
+                      <input type="text" class="form-control" id="pilihan_c" name="pilihan_ganda[c]">
+                    </div>
+                    <div class="form-group">
+                      <label for="pilihan_d">Pilihan D</label>
+                      <input type="text" class="form-control" id="pilihan_d" name="pilihan_ganda[d]">
+                    </div>
+                  </div>
+                  <div id="kunci_jawaban_pilgan" class="form-group" style="display: none;">
+                    <label for="kunci_jawaban">Kunci Jawaban</label>
+                    <select class="form-control" id="kunci_jawaban" name="kunci_jawaban">
+                      <option value="">Pilih Kunci Jawaban</option>
+                      <option value="a">A</option>
+                      <option value="b">B</option>
+                      <option value="c">C</option>
+                      <option value="d">D</option>
+                    </select>
+                  </div>
+                  <div id="kunci_jawaban_essay" class="form-group" style="display: none;">
+                    <label for="kata_kunci">Kata Kunci Jawaban</label>
+                    <input type="text" class="form-control" id="kata_kunci" name="kata_kunci" placeholder="Masukkan kata kunci jawaban, pisahkan dengan koma jika lebih dari satu">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Tambah Soal</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
+    </div>
+  </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('#jenis_soal').change(function() {
+      if ($(this).val() === 'pilihan_ganda') {
+        $('#pilihan_ganda_options').show();
+        $('#kunci_jawaban_pilgan').show();
+        $('#kunci_jawaban_essay').hide();
+      } else {
+        $('#pilihan_ganda_options').hide();
+        $('#kunci_jawaban_pilgan').hide();
+        $('#kunci_jawaban_essay').show();
+      }
+    });
+  });
+</script>
+</body>
+</html>

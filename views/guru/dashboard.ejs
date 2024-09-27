@@ -1,97 +1,145 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dashboard Guru - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+  <!-- Custom CSS -->
+  <style>
+    .welcome-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-card .card-body {
+      padding: 2rem;
+    }
+
+    .welcome-card h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .welcome-card p {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card {
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+  </style>
 </head>
+
 <body class="hold-transition sidebar-mini">
-<div class="wrapper">
+  <div class="wrapper">
 
-  <%- include('partials/navigation') %>
+    <%- include('partials/navigation') %>
 
-  <div class="content-wrapper">
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Dashboard Guru</h1>
+      <div class="content-wrapper">
+        <section class="content-header">
+          <div class="container-fluid">
+            <div class="row mb-2">
+              <div class="col-sm-6">
+                <h1>Dashboard Guru</h1>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        <section class="content">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-lg-3 col-6">
+                <div class="small-box bg-info stat-card">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Jumlah Kelas</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-chalkboard"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="small-box bg-success stat-card">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Jumlah Siswa</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-user-graduate"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning stat-card">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Jumlah Mata Pelajaran</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-book"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger stat-card">
+                  <div class="inner">
+                    <h3>0</h3>
+                    <p>Jumlah Ujian</p>
+                  </div>
+                  <div class="icon">
+                    <i class="fas fa-file-alt"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12 mb-4">
+                <div class="card welcome-card">
+                  <div class="card-body">
+                    <h2>Selamat Datang, <%= user.fullname %>!</h2>
+                    <p><i class="fas fa-id-card mr-2"></i>NIP: <%= user.nip %>
+                    </p>
+                    <p><i class="fas fa-school mr-2"></i>Sekolah: <%= user.nama_sekolah %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </section>
 
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Jumlah Kelas</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-chalkboard"></i>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Jumlah Siswa</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-user-graduate"></i>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Jumlah Mata Pelajaran</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-book"></i>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-3 col-6">
-            <div class="small-box bg-danger">
-              <div class="inner">
-                <h3>0</h3>
-                <p>Jumlah Ujian</p>
-              </div>
-              <div class="icon">
-                <i class="fas fa-file-alt"></i>
-              </div>
-            </div>
-          </div>
+      <footer class="main-footer">
+        <div class="float-right d-none d-sm-inline">
+          Sistem Ujian Sekolah
         </div>
-      </div>
-    </section>
+      </footer>
   </div>
 
-  <footer class="main-footer">
-    <div class="float-right d-none d-sm-inline">
-      Sistem Ujian Sekolah
-    </div>
-  </footer>
-</div>
-
-<!-- jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 </body>
+
 </html>

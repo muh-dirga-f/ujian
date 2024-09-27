@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manajemen Pengguna - Sistem Ujian Sekolah</title>
+  <title>Manajemen Kelas - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -18,11 +18,18 @@
   <%- include('partials/navigation') %>
 
   <div class="content-wrapper">
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger alert-dismissible">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <h5><i class="icon fas fa-ban"></i> Error!</h5>
+        <%= error %>
+      </div>
+    <% } %>
     <section class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Manajemen Pengguna</h1>
+            <h1>Manajemen Kelas</h1>
           </div>
         </div>
       </div>
@@ -34,10 +41,10 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Daftar Pengguna</h3>
+                <h3 class="card-title">Daftar Kelas</h3>
                 <div class="card-tools">
-                  <a href="/admin/users/add" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Pengguna
+                  <a href="/guru/kelas/add" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Kelas
                   </a>
                 </div>
               </div>
@@ -46,24 +53,27 @@
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Nama Lengkap</th>
-                      <th>Username/NIS</th>
-                      <th>Tipe</th>
+                      <th>Kelas</th>
+                      <th>Minor Kelas</th>
+                      <th>Tahun</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% users.forEach(function(user) { %>
+                    <% kelas.forEach(function(kelas) { %>
                       <tr>
-                        <td><%= user.id %></td>
-                        <td><%= user.fullname %></td>
-                        <td><%= user.username %></td>
-                        <td><%= user.user_type %></td>
+                        <td><%= kelas.id_kelas %></td>
+                        <td><%= kelas.kelas %></td>
+                        <td><%= kelas.minor_kelas %></td>
+                        <td><%= kelas.tahun %></td>
                         <td>
-                          <a href="/admin/users/edit/<%= user.id %>/<%= user.id_type %>" class="btn btn-info btn-sm">
+                          <a href="/guru/kelas/<%= kelas.id_kelas %>/mapel" class="btn btn-primary btn-sm">
+                            <i class="fas fa-book"></i> Mata Pelajaran
+                          </a>
+                          <a href="/guru/kelas/edit/<%= kelas.id_kelas %>" class="btn btn-info btn-sm">
                             <i class="fas fa-edit"></i> Edit
                           </a>
-                          <a href="/admin/users/delete/<%= user.id %>/<%= user.id_type %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                          <a href="/guru/kelas/delete/<%= kelas.id_kelas %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
                             <i class="fas fa-trash"></i> Hapus
                           </a>
                         </td>

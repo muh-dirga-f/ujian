@@ -22,46 +22,102 @@
   <!-- /.login-logo -->
   <div class="card">
     <div class="card-body login-card-body">
-      <p class="login-box-msg">Masuk untuk memulai sesi Anda</p>
-
-      <form action="/login" method="post">
-        <div class="input-group mb-3">
-          <input type="text" class="form-control" placeholder="Username/NIS" name="username" required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-user"></span>
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <a class="nav-link active" id="login-tab" data-toggle="tab" href="#login" role="tab" aria-controls="login" aria-selected="true">Login</a>
+        </li>
+        <li class="nav-item" role="presentation">
+          <a class="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false">Registrasi Siswa</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+          <p class="login-box-msg mt-3">Masuk untuk memulai sesi Anda</p>
+          <form action="/login" method="post">
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="Username/NIS" name="username" required>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-user"></span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="input-group mb-3">
-          <input type="password" class="form-control" placeholder="Password" name="password" required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
+            <div class="input-group mb-3">
+              <input type="password" class="form-control" placeholder="Password" name="password" required>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-lock"></span>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="input-group mb-3">
-          <select class="form-control" name="userType" required>
-            <option value="">Pilih Jenis Pengguna</option>
-            <option value="siswa">Siswa</option>
-            <option value="guru">Guru</option>
-            <option value="admin">Admin</option>
-          </select>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-users"></span>
+            <div class="input-group mb-3">
+              <select class="form-control" name="userType" required>
+                <option value="">Pilih Jenis Pengguna</option>
+                <option value="siswa">Siswa</option>
+                <option value="guru">Guru</option>
+                <option value="admin">Admin</option>
+              </select>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-users"></span>
+                </div>
+              </div>
             </div>
-          </div>
+            <div class="row">
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+              </div>
+            </div>
+          </form>
         </div>
-        <div class="row">
-          <!-- /.col -->
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary btn-block">Masuk</button>
-          </div>
-          <!-- /.col -->
+        <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+          <p class="login-box-msg mt-3">Registrasi Siswa Baru</p>
+          <form action="/register" method="post">
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="Nama Lengkap" name="fullname" required>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-user"></span>
+                </div>
+              </div>
+            </div>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="NIS" name="nis" required>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-id-card"></span>
+                </div>
+              </div>
+            </div>
+            <div class="input-group mb-3">
+              <input type="password" class="form-control" placeholder="Password" name="password" required>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-lock"></span>
+                </div>
+              </div>
+            </div>
+            <div class="input-group mb-3">
+              <select class="form-control" name="id_sekolah" required>
+                <option value="">Pilih Sekolah</option>
+                <% schools.forEach(function(school) { %>
+                  <option value="<%= school.id_sekolah %>"><%= school.nama_sekolah %></option>
+                <% }); %>
+              </select>
+              <div class="input-group-append">
+                <div class="input-group-text">
+                  <span class="fas fa-school"></span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
     <!-- /.login-card-body -->
   </div>

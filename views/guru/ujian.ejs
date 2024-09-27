@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manajemen Pengguna - Sistem Ujian Sekolah</title>
+  <title>Manajemen Ujian - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Manajemen Pengguna</h1>
+            <h1>Manajemen Ujian</h1>
           </div>
         </div>
       </div>
@@ -34,10 +34,10 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Daftar Pengguna</h3>
+                <h3 class="card-title">Daftar Ujian</h3>
                 <div class="card-tools">
-                  <a href="/admin/users/add" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Pengguna
+                  <a href="/guru/ujian/add" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Ujian
                   </a>
                 </div>
               </div>
@@ -46,25 +46,32 @@
                   <thead>
                     <tr>
                       <th>ID</th>
-                      <th>Nama Lengkap</th>
-                      <th>Username/NIS</th>
-                      <th>Tipe</th>
+                      <th>Judul Ujian</th>
+                      <th>Kelas</th>
+                      <th>Mata Pelajaran</th>
+                      <th>Waktu Mulai</th>
+                      <th>Waktu Selesai</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% users.forEach(function(user) { %>
+                    <% ujianList.forEach(function(ujian) { %>
                       <tr>
-                        <td><%= user.id %></td>
-                        <td><%= user.fullname %></td>
-                        <td><%= user.username %></td>
-                        <td><%= user.user_type %></td>
+                        <td><%= ujian.id_ujian %></td>
+                        <td><%= ujian.judul_ujian %></td>
+                        <td><%= ujian.kelas %> <%= ujian.minor_kelas %></td>
+                        <td><%= ujian.nama_mapel %></td>
+                        <td><%= ujian.waktu_mulai %></td>
+                        <td><%= ujian.waktu_selesai %></td>
                         <td>
-                          <a href="/admin/users/edit/<%= user.id %>/<%= user.id_type %>" class="btn btn-info btn-sm">
+                          <a href="/guru/ujian/edit/<%= ujian.id_ujian %>" class="btn btn-info btn-sm">
                             <i class="fas fa-edit"></i> Edit
                           </a>
-                          <a href="/admin/users/delete/<%= user.id %>/<%= user.id_type %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+                          <a href="/guru/ujian/delete/<%= ujian.id_ujian %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');">
                             <i class="fas fa-trash"></i> Hapus
+                          </a>
+                          <a href="/guru/ujian/<%= ujian.id_ujian %>/soal" class="btn btn-primary btn-sm">
+                            <i class="fas fa-question-circle"></i> Kelola Soal
                           </a>
                         </td>
                       </tr>
