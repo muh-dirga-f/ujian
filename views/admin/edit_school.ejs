@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Sekolah - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Edit Sekolah</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Form Edit Sekolah</h3>
+              </div>
+              <div class="card-body">
+                <form action="/admin/schools/edit/<%= school.id_sekolah %>" method="POST">
+                  <div class="form-group">
+                    <label for="npsn">NPSN</label>
+                    <input type="text" class="form-control" id="npsn" name="npsn" value="<%= school.npsn %>" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="nama_sekolah">Nama Sekolah</label>
+                    <input type="text" class="form-control" id="nama_sekolah" name="nama_sekolah" value="<%= school.nama_sekolah %>" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="alamat">Alamat</label>
+                    <textarea class="form-control" id="alamat" name="alamat" rows="3" required><%= school.alamat %></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label for="kab_kota">Kabupaten/Kota</label>
+                    <input type="text" class="form-control" id="kab_kota" name="kab_kota" value="<%= school.kab_kota %>" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="provinsi">Provinsi</label>
+                    <input type="text" class="form-control" id="provinsi" name="provinsi" value="<%= school.provinsi %>" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
+    </div>
+  </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+</body>
+</html>
