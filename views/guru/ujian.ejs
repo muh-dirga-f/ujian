@@ -64,14 +64,14 @@
                         <td><%= ujian.waktu_mulai %></td>
                         <td><%= ujian.waktu_selesai %></td>
                         <td>
+                          <a href="/guru/ujian/<%= ujian.id_ujian %>/soal" class="btn btn-primary btn-sm">
+                            <i class="fas fa-question-circle"></i> Kelola Soal
+                          </a>
                           <a href="/guru/ujian/edit/<%= ujian.id_ujian %>" class="btn btn-info btn-sm">
                             <i class="fas fa-edit"></i> Edit
                           </a>
                           <a href="/guru/ujian/delete/<%= ujian.id_ujian %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');">
                             <i class="fas fa-trash"></i> Hapus
-                          </a>
-                          <a href="/guru/ujian/<%= ujian.id_ujian %>/soal" class="btn btn-primary btn-sm">
-                            <i class="fas fa-question-circle"></i> Kelola Soal
                           </a>
                         </td>
                       </tr>
