@@ -453,7 +453,7 @@ app.get('/guru/ujian', (req, res) => {
     return res.redirect('/');
   }
   db.all(`
-    SELECT u.id_ujian, k.kelas, k.minor_kelas, m.nama_mapel, u.waktu_mulai, u.waktu_selesai
+    SELECT u.id_ujian, u.judul_ujian, k.kelas, k.minor_kelas, m.nama_mapel, u.waktu_mulai, u.waktu_selesai
     FROM ujian u
     JOIN kelas k ON u.id_kelas = k.id_kelas
     JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
