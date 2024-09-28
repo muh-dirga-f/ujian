@@ -927,7 +927,13 @@ app.get('/siswa/dashboard', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
   }
-  db.get('SELECT * FROM kelas_siswa WHERE nis = ?', [req.session.user.username], (err, row) => {
+  db.get(`
+    SELECT ks.*, s.nama_sekolah 
+    FROM kelas_siswa ks
+    JOIN siswa si ON ks.nis = si.nis
+    JOIN sekolah s ON si.id_sekolah = s.id_sekolah
+    WHERE ks.nis = ?
+  `, [req.session.user.username], (err, row) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
