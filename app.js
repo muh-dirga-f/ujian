@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -89,9 +90,14 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
-  secret: 'rahasia',
+  secret: crypto.randomBytes(32).toString('hex'),
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
 }));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -146,8 +152,11 @@ app.post('/login', (req, res) => {
       req.session.user = { 
         id: row.id_guru || row.id_admin || row.id_siswa, 
         username: row.username || row.nis, 
-        type: userType 
+        fullname: row.fullname,
+        type: userType,
+        id_sekolah: row.id_sekolah
       };
+      req.session.isLoggedIn = true;
       res.redirect(`/${userType}/dashboard`);
     } else {
       res.status(401).send('Username/NIS atau password salah');
@@ -170,10 +179,27 @@ app.post('/register', (req, res) => {
   );
 });
 
-app.get('/admin/dashboard', (req, res) => {
-  if (!req.session.user || req.session.user.type !== 'admin') {
-    return res.redirect('/');
+// Middleware untuk memeriksa autentikasi
+const checkAuth = (req, res, next) => {
+  if (req.session.isLoggedIn) {
+    next();
+  } else {
+    res.redirect('/');
   }
+};
+
+// Middleware untuk memeriksa tipe pengguna
+const checkUserType = (type) => {
+  return (req, res, next) => {
+    if (req.session.user && req.session.user.type === type) {
+      next();
+    } else {
+      res.redirect('/');
+    }
+  };
+};
+
+app.get('/admin/dashboard', checkAuth, checkUserType('admin'), (req, res) => {
   res.render('admin/dashboard', { user: req.session.user });
 });
 
@@ -1045,6 +1071,7 @@ app.get('/logout', (req, res) => {
     if (err) {
       console.error('Error destroying session:', err);
     }
+    res.clearCookie('connect.sid');
     res.redirect('/');
   });
 });
