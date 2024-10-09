@@ -709,6 +709,46 @@ app.get('/guru/ujian/delete/:id', (req, res) => {
   });
 });
 
+app.get('/guru/ujian/:id/nilai', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id } = req.params;
+  
+  // Fetch exam details
+  db.get(`
+    SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas
+    FROM ujian u
+    JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+    JOIN kelas k ON u.id_kelas = k.id_kelas
+    WHERE u.id_ujian = ?
+  `, [id], (err, ujian) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    
+    if (!ujian) {
+      return res.status(404).send('Ujian tidak ditemukan');
+    }
+    
+    // Fetch student answers
+    db.all(`
+      SELECT js.*, s.fullname, s.nis
+      FROM jawaban_siswa js
+      JOIN siswa s ON js.nis = s.nis
+      WHERE js.id_ujian = ?
+    `, [id], (err, jawaban) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      
+      res.render('guru/nilai_ujian', { user: req.session.user, ujian: ujian, jawaban: jawaban });
+    });
+  });
+});
+
 app.get('/guru/ujian/add', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'guru') {
     return res.redirect('/');
