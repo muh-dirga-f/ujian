@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manajemen Ujian - Sistem Ujian Sekolah</title>
+  <title>Nilai Ujian - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Manajemen Ujian</h1>
+            <h1>Nilai Ujian</h1>
           </div>
         </div>
       </div>
@@ -34,47 +34,52 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Daftar Ujian</h3>
-                <div class="card-tools">
-                  <a href="/guru/ujian/add" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Ujian
-                  </a>
-                </div>
+                <h3 class="card-title">Detail Ujian</h3>
+              </div>
+              <div class="card-body">
+                <p><strong>Judul Ujian:</strong> <%= ujian.judul_ujian %></p>
+                <p><strong>Mata Pelajaran:</strong> <%= ujian.nama_mapel %></p>
+                <p><strong>Kelas:</strong> <%= ujian.kelas %> <%= ujian.minor_kelas %></p>
+                <p><strong>Waktu Mulai:</strong> <%= ujian.waktu_mulai %></p>
+                <p><strong>Waktu Selesai:</strong> <%= ujian.waktu_selesai %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Jawaban Siswa</h3>
               </div>
               <div class="card-body table-responsive p-0">
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Judul Ujian</th>
-                      <th>Kelas</th>
-                      <th>Mata Pelajaran</th>
-                      <th>Waktu Mulai</th>
-                      <th>Waktu Selesai</th>
+                      <th>NIS</th>
+                      <th>Nama Siswa</th>
+                      <th>Jumlah Soal Dijawab</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% ujianList.forEach(function(ujian) { %>
+                    <% 
+                    const groupedJawaban = jawaban.reduce((acc, curr) => {
+                      if (!acc[curr.nis]) {
+                        acc[curr.nis] = { nis: curr.nis, fullname: curr.fullname, count: 0 };
+                      }
+                      acc[curr.nis].count++;
+                      return acc;
+                    }, {});
+                    
+                    Object.values(groupedJawaban).forEach(function(siswa) { %>
                       <tr>
-                        <td><%= ujian.id_ujian %></td>
-                        <td><%= ujian.judul_ujian %></td>
-                        <td><%= ujian.kelas %> <%= ujian.minor_kelas %></td>
-                        <td><%= ujian.nama_mapel %></td>
-                        <td><%= ujian.waktu_mulai %></td>
-                        <td><%= ujian.waktu_selesai %></td>
+                        <td><%= siswa.nis %></td>
+                        <td><%= siswa.fullname %></td>
+                        <td><%= siswa.count %></td>
                         <td>
-                          <a href="/guru/ujian/<%= ujian.id_ujian %>/soal" class="btn btn-primary btn-sm">
-                            <i class="fas fa-question-circle"></i> Kelola Soal
-                          </a>
-                          <a href="/guru/ujian/<%= ujian.id_ujian %>/nilai" class="btn btn-success btn-sm">
-                            <i class="fas fa-check-circle"></i> Nilai Ujian
-                          </a>
-                          <a href="/guru/ujian/edit/<%= ujian.id_ujian %>" class="btn btn-info btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                          </a>
-                          <a href="/guru/ujian/delete/<%= ujian.id_ujian %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');">
-                            <i class="fas fa-trash"></i> Hapus
+                          <a href="/guru/ujian/<%= ujian.id_ujian %>/nilai/<%= siswa.nis %>" class="btn btn-primary btn-sm">
+                            <i class="fas fa-check-circle"></i> Nilai
                           </a>
                         </td>
                       </tr>
