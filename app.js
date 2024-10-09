@@ -755,7 +755,7 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
     
     // Fetch student answers
     db.all(`
-      SELECT js.*, s.fullname, s.nis, n.status
+      SELECT js.*, s.fullname, s.nis, n.status, n.nilai_total
       FROM jawaban_siswa js
       JOIN siswa s ON js.nis = s.nis
       LEFT JOIN nilai_ujian n ON n.id_ujian = js.id_ujian AND n.nis = js.nis
