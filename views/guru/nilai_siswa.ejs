@@ -61,15 +61,15 @@
                       <% if (s.jenis_soal === 'pilihan_ganda') { %>
                         <p><strong>Pilihan:</strong></p>
                         <% 
-                        let pilihan_ganda = [];
+                        let pilihan_ganda = {};
                         try {
                           pilihan_ganda = JSON.parse(s.pilihan_ganda);
                         } catch (e) {
                           console.error('Error parsing pilihan_ganda:', e);
                         }
-                        if (Array.isArray(pilihan_ganda)) {
-                          pilihan_ganda.forEach(function(pilihan, i) { %>
-                            <p><%= String.fromCharCode(65 + i) %>. <%= pilihan %></p>
+                        if (typeof pilihan_ganda === 'object' && pilihan_ganda !== null) {
+                          Object.keys(pilihan_ganda).forEach(function(key, i) { %>
+                            <p><%= String.fromCharCode(65 + i) %>. <%= pilihan_ganda[key] %></p>
                           <% });
                         } else {
                           %><p>Error: Pilihan ganda tidak valid</p><%
