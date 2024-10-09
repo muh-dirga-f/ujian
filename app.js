@@ -83,6 +83,28 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       kunci_jawaban TEXT,
       FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian)
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS jawaban_siswa (
+      id_ujian INTEGER,
+      id_soal INTEGER,
+      nis TEXT,
+      jawaban TEXT,
+      PRIMARY KEY (id_ujian, id_soal, nis),
+      FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian),
+      FOREIGN KEY (id_soal) REFERENCES soal(id_soal),
+      FOREIGN KEY (nis) REFERENCES siswa(nis)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS ujian_siswa (
+      id_ujian INTEGER,
+      nis TEXT,
+      status TEXT,
+      waktu_mulai TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      waktu_selesai TIMESTAMP,
+      PRIMARY KEY (id_ujian, nis),
+      FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian),
+      FOREIGN KEY (nis) REFERENCES siswa(nis)
+    )`);
   }
 });
 
