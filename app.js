@@ -942,6 +942,29 @@ app.get('/siswa/dashboard', (req, res) => {
   });
 });
 
+app.get('/siswa/jadwal-ujian', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.redirect('/');
+  }
+  
+  db.all(`
+    SELECT u.id_ujian, u.judul_ujian, u.waktu_mulai, u.waktu_selesai, 
+           k.kelas, k.minor_kelas, m.nama_mapel
+    FROM ujian u
+    JOIN kelas k ON u.id_kelas = k.id_kelas
+    JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+    JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
+    WHERE ks.nis = ?
+    ORDER BY u.waktu_mulai ASC
+  `, [req.session.user.username], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('siswa/jadwal-ujian', { user: req.session.user, jadwalUjian: rows });
+  });
+});
+
 app.post('/siswa/update-kelas', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
