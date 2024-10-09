@@ -70,8 +70,10 @@
                               console.error('pilihan_ganda is not an array:', s.pilihan_ganda);
                             }
                           %>
-                        <% } else { %>
+                        <% } else if (s.jenis_soal === 'essay') { %>
                           <textarea class="form-control" name="jawaban_<%= s.id_soal %>" rows="3"></textarea>
+                        <% } else { %>
+                          <p class="text-danger">Jenis soal tidak dikenali</p>
                         <% } %>
                       </div>
                     <% }) %>
