@@ -105,6 +105,27 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian),
       FOREIGN KEY (nis) REFERENCES siswa(nis)
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS nilai_ujian (
+      id_ujian INTEGER,
+      nis TEXT,
+      nilai_total INTEGER,
+      status TEXT,
+      PRIMARY KEY (id_ujian, nis),
+      FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian),
+      FOREIGN KEY (nis) REFERENCES siswa(nis)
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS nilai_soal (
+      id_ujian INTEGER,
+      id_soal INTEGER,
+      nis TEXT,
+      nilai INTEGER,
+      PRIMARY KEY (id_ujian, id_soal, nis),
+      FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian),
+      FOREIGN KEY (id_soal) REFERENCES soal(id_soal),
+      FOREIGN KEY (nis) REFERENCES siswa(nis)
+    )`);
   }
 });
 
@@ -734,9 +755,10 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
     
     // Fetch student answers
     db.all(`
-      SELECT js.*, s.fullname, s.nis
+      SELECT js.*, s.fullname, s.nis, n.status
       FROM jawaban_siswa js
       JOIN siswa s ON js.nis = s.nis
+      LEFT JOIN nilai_ujian n ON n.id_ujian = js.id_ujian AND n.nis = js.nis
       WHERE js.id_ujian = ?
     `, [id], (err, jawaban) => {
       if (err) {
@@ -746,6 +768,122 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
       
       res.render('guru/nilai_ujian', { user: req.session.user, ujian: ujian, jawaban: jawaban });
     });
+  });
+});
+
+app.get('/guru/ujian/:id_ujian/nilai/:nis', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_ujian, nis } = req.params;
+
+  // Fetch exam details
+  db.get(`
+    SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas
+    FROM ujian u
+    JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+    JOIN kelas k ON u.id_kelas = k.id_kelas
+    WHERE u.id_ujian = ?
+  `, [id_ujian], (err, ujian) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+
+    if (!ujian) {
+      return res.status(404).send('Ujian tidak ditemukan');
+    }
+
+    // Fetch student details
+    db.get('SELECT * FROM siswa WHERE nis = ?', [nis], (err, siswa) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+
+      if (!siswa) {
+        return res.status(404).send('Siswa tidak ditemukan');
+      }
+
+      // Fetch exam questions
+      db.all('SELECT * FROM soal WHERE id_ujian = ?', [id_ujian], (err, soal) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('Server error');
+        }
+
+        // Fetch student answers
+        db.all('SELECT * FROM jawaban_siswa WHERE id_ujian = ? AND nis = ?', [id_ujian, nis], (err, jawaban) => {
+          if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+          }
+
+          // Convert jawaban array to object for easier access
+          const jawabanObj = {};
+          jawaban.forEach(j => {
+            jawabanObj[j.id_soal] = j.jawaban;
+          });
+
+          res.render('guru/nilai_siswa', { 
+            user: req.session.user, 
+            ujian: ujian, 
+            siswa: siswa, 
+            soal: soal, 
+            jawaban: jawabanObj 
+          });
+        });
+      });
+    });
+  });
+});
+
+app.post('/guru/ujian/:id_ujian/nilai/:nis', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'guru') {
+    return res.redirect('/');
+  }
+  const { id_ujian, nis } = req.params;
+  const { nilai, status } = req.body;
+
+  // Calculate total score
+  const totalNilai = Object.values(nilai).reduce((sum, nilai) => sum + parseInt(nilai), 0);
+
+  // Insert or update nilai_ujian
+  db.run(`
+    INSERT INTO nilai_ujian (id_ujian, nis, nilai_total, status)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(id_ujian, nis) DO UPDATE SET
+    nilai_total = excluded.nilai_total,
+    status = excluded.status
+  `, [id_ujian, nis, totalNilai, status], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+
+    // Insert or update nilai_soal for each question
+    const nilaiSoalPromises = Object.entries(nilai).map(([id_soal, nilai_soal]) => {
+      return new Promise((resolve, reject) => {
+        db.run(`
+          INSERT INTO nilai_soal (id_ujian, id_soal, nis, nilai)
+          VALUES (?, ?, ?, ?)
+          ON CONFLICT(id_ujian, id_soal, nis) DO UPDATE SET
+          nilai = excluded.nilai
+        `, [id_ujian, id_soal, nis, nilai_soal], (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    });
+
+    Promise.all(nilaiSoalPromises)
+      .then(() => {
+        res.redirect(`/guru/ujian/${id_ujian}/nilai`);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Server error');
+      });
   });
 });
 

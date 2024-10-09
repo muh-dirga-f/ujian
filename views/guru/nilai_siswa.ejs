@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Penilaian Ujian Siswa - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Penilaian Ujian Siswa</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Detail Ujian dan Siswa</h3>
+              </div>
+              <div class="card-body">
+                <p><strong>Judul Ujian:</strong> <%= ujian.judul_ujian %></p>
+                <p><strong>Mata Pelajaran:</strong> <%= ujian.nama_mapel %></p>
+                <p><strong>Kelas:</strong> <%= ujian.kelas %> <%= ujian.minor_kelas %></p>
+                <p><strong>Nama Siswa:</strong> <%= siswa.fullname %></p>
+                <p><strong>NIS:</strong> <%= siswa.nis %></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Penilaian Jawaban</h3>
+              </div>
+              <div class="card-body">
+                <form action="/guru/ujian/<%= ujian.id_ujian %>/nilai/<%= siswa.nis %>" method="POST">
+                  <% soal.forEach(function(s, index) { %>
+                    <div class="form-group">
+                      <label>Soal <%= index + 1 %>:</label>
+                      <p><%= s.soal %></p>
+                      <% if (s.jenis_soal === 'pilihan_ganda') { %>
+                        <p><strong>Pilihan:</strong></p>
+                        <% JSON.parse(s.pilihan_ganda).forEach(function(pilihan, i) { %>
+                          <p><%= String.fromCharCode(65 + i) %>. <%= pilihan %></p>
+                        <% }); %>
+                      <% } %>
+                      <p><strong>Kunci Jawaban:</strong> <%= s.kunci_jawaban %></p>
+                      <p><strong>Jawaban Siswa:</strong> <%= jawaban[s.id_soal] || 'Tidak dijawab' %></p>
+                      <label for="nilai_<%= s.id_soal %>">Nilai:</label>
+                      <input type="number" class="form-control" id="nilai_<%= s.id_soal %>" name="nilai[<%= s.id_soal %>]" min="0" max="100" required>
+                    </div>
+                  <% }); %>
+                  <div class="form-group">
+                    <label for="status">Status:</label>
+                    <select class="form-control" id="status" name="status" required>
+                      <option value="belum_dinilai">Belum Dinilai</option>
+                      <option value="sudah_dinilai">Sudah Dinilai</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
+    </div>
+  </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+</body>
+</html>
