@@ -965,6 +965,41 @@ app.get('/siswa/jadwal-ujian', (req, res) => {
   });
 });
 
+app.get('/siswa/ujian/:id', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.redirect('/');
+  }
+  
+  const ujianId = req.params.id;
+  
+  // Periksa apakah ujian masih berlangsung
+  db.get(`
+    SELECT u.*, m.nama_mapel
+    FROM ujian u
+    JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+    WHERE u.id_ujian = ? AND u.waktu_mulai <= datetime('now') AND u.waktu_selesai >= datetime('now')
+  `, [ujianId], (err, ujian) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    
+    if (!ujian) {
+      return res.status(404).send('Ujian tidak ditemukan atau sudah berakhir');
+    }
+    
+    // Ambil soal-soal ujian
+    db.all('SELECT * FROM soal WHERE id_ujian = ?', [ujianId], (err, soal) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      
+      res.render('siswa/ujian', { user: req.session.user, ujian: ujian, soal: soal });
+    });
+  });
+});
+
 app.post('/siswa/update-kelas', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');

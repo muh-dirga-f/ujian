@@ -45,6 +45,7 @@
                         <th>Kelas</th>
                         <th>Waktu Mulai</th>
                         <th>Waktu Selesai</th>
+                        <th>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -55,6 +56,20 @@
                           <td><%= ujian.kelas %> <%= ujian.minor_kelas %></td>
                           <td><%= new Date(ujian.waktu_mulai).toLocaleString() %></td>
                           <td><%= new Date(ujian.waktu_selesai).toLocaleString() %></td>
+                          <td>
+                            <% 
+                              const now = new Date();
+                              const mulai = new Date(ujian.waktu_mulai);
+                              const selesai = new Date(ujian.waktu_selesai);
+                              if (now >= mulai && now <= selesai) {
+                            %>
+                              <a href="/siswa/ujian/<%= ujian.id_ujian %>" class="btn btn-primary">Mulai Ujian</a>
+                            <% } else if (now < mulai) { %>
+                              <span class="badge badge-info">Belum dimulai</span>
+                            <% } else { %>
+                              <span class="badge badge-secondary">Selesai</span>
+                            <% } %>
+                          </td>
                         </tr>
                       <% }); %>
                     </tbody>

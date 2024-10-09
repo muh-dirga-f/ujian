@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= ujian.judul_ujian %> - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+
+<body class="hold-transition sidebar-mini">
+  <div class="wrapper">
+
+    <%- include('partials/navigation') %>
+
+    <div class="content-wrapper">
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1><%= ujian.judul_ujian %></h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title"><%= ujian.nama_mapel %></h3>
+                  <div class="card-tools">
+                    <div id="countdown" class="badge badge-info"></div>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <form id="ujianForm">
+                    <% soal.forEach((s, index) => { %>
+                      <div class="form-group">
+                        <label><%= index + 1 %>. <%= s.soal %></label>
+                        <% if (s.jenis_soal === 'pilihan_ganda') { %>
+                          <% JSON.parse(s.pilihan_ganda).forEach((pilihan, i) => { %>
+                            <div class="form-check">
+                              <input class="form-check-input" type="radio" name="jawaban_<%= s.id_soal %>" value="<%= i %>" id="pilihan_<%= s.id_soal %>_<%= i %>">
+                              <label class="form-check-label" for="pilihan_<%= s.id_soal %>_<%= i %>">
+                                <%= pilihan %>
+                              </label>
+                            </div>
+                          <% }) %>
+                        <% } else { %>
+                          <textarea class="form-control" name="jawaban_<%= s.id_soal %>" rows="3"></textarea>
+                        <% } %>
+                      </div>
+                    <% }) %>
+                    <button type="submit" class="btn btn-primary">Selesai Ujian</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="main-footer">
+      <div class="float-right d-none d-sm-inline">
+        Sistem Ujian Sekolah
+      </div>
+    </footer>
+  </div>
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+  
+  <script>
+    // Hitung mundur waktu ujian
+    const endTime = new Date('<%= ujian.waktu_selesai %>').getTime();
+    
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = endTime - now;
+      
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+      
+      document.getElementById('countdown').innerHTML = hours + "h " + minutes + "m " + seconds + "s ";
+      
+      if (distance < 0) {
+        clearInterval(x);
+        document.getElementById('countdown').innerHTML = "WAKTU HABIS";
+        document.getElementById('ujianForm').submit();
+      }
+    }
+    
+    const x = setInterval(updateCountdown, 1000);
+    
+    // Submit form saat waktu habis atau tombol Selesai Ujian ditekan
+    document.getElementById('ujianForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Di sini Anda bisa menambahkan logika untuk mengirim jawaban ke server
+      alert('Ujian telah selesai!');
+      window.location.href = '/siswa/dashboard';
+    });
+  </script>
+</body>
+
+</html>
