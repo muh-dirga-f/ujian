@@ -78,7 +78,7 @@
                         <% } %>
                       </div>
                     <% }) %>
-                    <button type="submit" class="btn btn-primary">Selesai Ujian</button>
+                    <button type="submit" id="selesaiUjianBtn" class="btn btn-primary">Selesai Ujian</button>
                   </form>
                 </div>
               </div>
@@ -138,6 +138,9 @@
       .then(data => {
         if (!data.success) {
           console.error('Gagal menyimpan jawaban');
+        } else {
+          // Periksa status ujian setelah menyimpan jawaban
+          checkUjianStatus();
         }
       })
       .catch(error => {
@@ -172,6 +175,24 @@
         console.error('Error:', error);
       });
     }
+
+    // Fungsi untuk memeriksa status ujian
+    function checkUjianStatus() {
+      fetch('/siswa/ujian/<%= ujian.id_ujian %>/status')
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'selesai') {
+          document.getElementById('selesaiUjianBtn').disabled = true;
+          alert('Anda telah menyelesaikan ujian ini.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
+    // Periksa status ujian saat halaman dimuat
+    checkUjianStatus();
 
     // Submit form saat waktu habis atau tombol Selesai Ujian ditekan
     document.getElementById('ujianForm').addEventListener('submit', function(e) {

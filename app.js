@@ -1123,6 +1123,26 @@ app.post('/siswa/ujian/:id/selesai', (req, res) => {
   });
 });
 
+// Rute untuk memeriksa status ujian
+app.get('/siswa/ujian/:id/status', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const ujianId = req.params.id;
+
+  db.get('SELECT status FROM ujian_siswa WHERE id_ujian = ? AND nis = ?', 
+    [ujianId, req.session.user.username], 
+    (err, row) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Server error' });
+      }
+      res.json({ status: row ? row.status : 'belum_selesai' });
+    }
+  );
+});
+
 app.post('/siswa/update-kelas', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
