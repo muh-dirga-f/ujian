@@ -59,7 +59,8 @@
                               Object.entries(pilihan_ganda).forEach(([key, value]) => { 
                           %>
                             <div class="form-check">
-                              <input class="form-check-input" type="radio" name="jawaban_<%= s.id_soal %>" value="<%= key %>" id="pilihan_<%= s.id_soal %>_<%= key %>">
+                              <input class="form-check-input" type="radio" name="jawaban_<%= s.id_soal %>" value="<%= key %>" id="pilihan_<%= s.id_soal %>_<%= key %>"
+                                <%= (jawaban[s.id_soal] === key) ? 'checked' : '' %>>
                               <label class="form-check-label" for="pilihan_<%= s.id_soal %>_<%= key %>">
                                 <%= value %>
                               </label>
@@ -71,7 +72,7 @@
                             }
                           %>
                         <% } else if (s.jenis_soal === 'essay') { %>
-                          <textarea class="form-control" name="jawaban_<%= s.id_soal %>" rows="3"></textarea>
+                          <textarea class="form-control" name="jawaban_<%= s.id_soal %>" rows="3"><%= jawaban[s.id_soal] || '' %></textarea>
                         <% } else { %>
                           <p class="text-danger">Jenis soal tidak dikenali</p>
                         <% } %>
@@ -118,18 +119,64 @@
       if (distance < 0) {
         clearInterval(x);
         document.getElementById('countdown').innerHTML = "WAKTU HABIS";
-        document.getElementById('ujianForm').submit();
+        selesaiUjian();
       }
     }
     
     const x = setInterval(updateCountdown, 1000);
     
+    // Fungsi untuk menyimpan jawaban
+    function simpanJawaban(id_soal, jawaban) {
+      fetch('/siswa/ujian/<%= ujian.id_ujian %>/jawab', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id_soal, jawaban }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.success) {
+          console.error('Gagal menyimpan jawaban');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
+    // Event listener untuk input jawaban
+    document.querySelectorAll('input[type="radio"], textarea').forEach(input => {
+      input.addEventListener('change', function() {
+        const id_soal = this.name.split('_')[1];
+        const jawaban = this.value;
+        simpanJawaban(id_soal, jawaban);
+      });
+    });
+
+    // Fungsi untuk menyelesaikan ujian
+    function selesaiUjian() {
+      fetch('/siswa/ujian/<%= ujian.id_ujian %>/selesai', {
+        method: 'POST',
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Ujian telah selesai!');
+          window.location.href = '/siswa/dashboard';
+        } else {
+          console.error('Gagal menyelesaikan ujian');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
     // Submit form saat waktu habis atau tombol Selesai Ujian ditekan
     document.getElementById('ujianForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      // Di sini Anda bisa menambahkan logika untuk mengirim jawaban ke server
-      alert('Ujian telah selesai!');
-      window.location.href = '/siswa/dashboard';
+      selesaiUjian();
     });
   </script>
 </body>

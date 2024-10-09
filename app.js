@@ -1037,11 +1037,67 @@ app.get('/siswa/ujian/:id', (req, res) => {
         return res.status(500).send('Server error');
       }
       
-      // Log untuk debugging
-      console.log('Soal ujian:', soal);
-      
-      res.render('siswa/ujian', { user: req.session.user, ujian: ujian, soal: soal });
+      // Ambil jawaban siswa yang sudah ada (jika ada)
+      db.all('SELECT * FROM jawaban_siswa WHERE id_ujian = ? AND nis = ?', [ujianId, req.session.user.username], (err, jawaban) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('Server error');
+        }
+        
+        // Konversi jawaban menjadi objek untuk memudahkan akses
+        const jawabanObj = {};
+        jawaban.forEach(j => {
+          jawabanObj[j.id_soal] = j.jawaban;
+        });
+        
+        res.render('siswa/ujian', { user: req.session.user, ujian: ujian, soal: soal, jawaban: jawabanObj });
+      });
     });
+  });
+});
+
+// Rute untuk menyimpan jawaban siswa
+app.post('/siswa/ujian/:id/jawab', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const ujianId = req.params.id;
+  const { id_soal, jawaban } = req.body;
+
+  // Simpan atau perbarui jawaban
+  db.run(`
+    INSERT INTO jawaban_siswa (id_ujian, id_soal, nis, jawaban)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(id_ujian, id_soal, nis) DO UPDATE SET jawaban = excluded.jawaban
+  `, [ujianId, id_soal, req.session.user.username, jawaban], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+    res.json({ success: true });
+  });
+});
+
+// Rute untuk menyelesaikan ujian
+app.post('/siswa/ujian/:id/selesai', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.status(403).json({ error: 'Unauthorized' });
+  }
+
+  const ujianId = req.params.id;
+
+  // Tandai ujian sebagai selesai
+  db.run(`
+    INSERT INTO ujian_siswa (id_ujian, nis, status, waktu_selesai)
+    VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP)
+    ON CONFLICT(id_ujian, nis) DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP
+  `, [ujianId, req.session.user.username], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+    res.json({ success: true });
   });
 });
 
