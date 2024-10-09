@@ -49,25 +49,25 @@
                         <label><%= index + 1 %>. <%= s.soal %></label>
                         <% if (s.jenis_soal === 'pilihan_ganda') { %>
                           <% 
-                            let pilihan_ganda = [];
+                            let pilihan_ganda = {};
                             try {
                               pilihan_ganda = JSON.parse(s.pilihan_ganda);
                             } catch (e) {
                               console.error('Error parsing pilihan_ganda:', e);
                             }
-                            if (Array.isArray(pilihan_ganda)) {
-                              pilihan_ganda.forEach((pilihan, i) => { 
+                            if (typeof pilihan_ganda === 'object' && pilihan_ganda !== null) {
+                              Object.entries(pilihan_ganda).forEach(([key, value]) => { 
                           %>
                             <div class="form-check">
-                              <input class="form-check-input" type="radio" name="jawaban_<%= s.id_soal %>" value="<%= i %>" id="pilihan_<%= s.id_soal %>_<%= i %>">
-                              <label class="form-check-label" for="pilihan_<%= s.id_soal %>_<%= i %>">
-                                <%= pilihan %>
+                              <input class="form-check-input" type="radio" name="jawaban_<%= s.id_soal %>" value="<%= key %>" id="pilihan_<%= s.id_soal %>_<%= key %>">
+                              <label class="form-check-label" for="pilihan_<%= s.id_soal %>_<%= key %>">
+                                <%= value %>
                               </label>
                             </div>
                           <% 
                               });
                             } else {
-                              console.error('pilihan_ganda is not an array:', s.pilihan_ganda);
+                              console.error('pilihan_ganda is not an object:', s.pilihan_ganda);
                             }
                           %>
                         <% } else if (s.jenis_soal === 'essay') { %>

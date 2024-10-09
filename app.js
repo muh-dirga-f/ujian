@@ -523,11 +523,11 @@ app.post('/guru/ujian/:id/soal/add', (req, res) => {
   const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda } = req.body;
   let pilihan_ganda_json = null;
   if (jenis_soal === 'pilihan_ganda') {
-    // Pastikan pilihan_ganda adalah array sebelum di-stringify
-    if (Array.isArray(pilihan_ganda)) {
+    // Pastikan pilihan_ganda adalah objek sebelum di-stringify
+    if (typeof pilihan_ganda === 'object' && pilihan_ganda !== null) {
       pilihan_ganda_json = JSON.stringify(pilihan_ganda);
     } else {
-      console.error('pilihan_ganda is not an array:', pilihan_ganda);
+      console.error('pilihan_ganda is not an object:', pilihan_ganda);
       return res.status(400).send('Invalid pilihan_ganda format');
     }
   }
