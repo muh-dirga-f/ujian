@@ -994,20 +994,34 @@ app.get('/siswa/ujian/:id', (req, res) => {
   
   const ujianId = req.params.id;
   
-  // Periksa apakah ujian masih berlangsung
+  // Periksa apakah ujian ada dan siswa berhak mengaksesnya
   db.get(`
-    SELECT u.*, m.nama_mapel
+    SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas
     FROM ujian u
     JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
-    WHERE u.id_ujian = ? AND u.waktu_mulai <= datetime('now') AND u.waktu_selesai >= datetime('now')
-  `, [ujianId], (err, ujian) => {
+    JOIN kelas k ON u.id_kelas = k.id_kelas
+    JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
+    WHERE u.id_ujian = ? AND ks.nis = ?
+  `, [ujianId, req.session.user.username], (err, ujian) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
     }
     
     if (!ujian) {
-      return res.status(404).send('Ujian tidak ditemukan atau sudah berakhir');
+      return res.status(404).send('Ujian tidak ditemukan atau Anda tidak memiliki akses');
+    }
+    
+    const now = new Date();
+    const waktuMulai = new Date(ujian.waktu_mulai);
+    const waktuSelesai = new Date(ujian.waktu_selesai);
+    
+    if (now < waktuMulai) {
+      return res.status(403).send('Ujian belum dimulai');
+    }
+    
+    if (now > waktuSelesai) {
+      return res.status(403).send('Ujian sudah berakhir');
     }
     
     // Ambil soal-soal ujian
