@@ -457,11 +457,7 @@ app.get('/admin/schools/delete/:id', (req, res) => {
   });
 });
 
-app.get('/guru/dashboard', (req, res) => {
-  if (!req.session.user || req.session.user.type !== 'guru') {
-    return res.redirect('/');
-  }
-  
+app.get('/guru/dashboard', checkAuth, checkUserType('guru'), (req, res) => {
   db.get('SELECT g.*, s.nama_sekolah FROM guru g JOIN sekolah s ON g.id_sekolah = s.id_sekolah WHERE g.id_guru = ?', 
     [req.session.user.id], 
     (err, row) => {
@@ -469,7 +465,7 @@ app.get('/guru/dashboard', (req, res) => {
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.render('guru/dashboard', { user: row });
+      res.render('guru/dashboard', { user: {...req.session.user, ...row} });
     }
   );
 });
