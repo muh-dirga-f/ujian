@@ -523,7 +523,13 @@ app.post('/guru/ujian/:id/soal/add', (req, res) => {
   const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda } = req.body;
   let pilihan_ganda_json = null;
   if (jenis_soal === 'pilihan_ganda') {
-    pilihan_ganda_json = JSON.stringify(pilihan_ganda);
+    // Pastikan pilihan_ganda adalah array sebelum di-stringify
+    if (Array.isArray(pilihan_ganda)) {
+      pilihan_ganda_json = JSON.stringify(pilihan_ganda);
+    } else {
+      console.error('pilihan_ganda is not an array:', pilihan_ganda);
+      return res.status(400).send('Invalid pilihan_ganda format');
+    }
   }
   const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
   db.run('INSERT INTO soal (id_ujian, jenis_soal, soal, kunci_jawaban, pilihan_ganda) VALUES (?, ?, ?, ?, ?)',
@@ -1030,6 +1036,9 @@ app.get('/siswa/ujian/:id', (req, res) => {
         console.error(err);
         return res.status(500).send('Server error');
       }
+      
+      // Log untuk debugging
+      console.log('Soal ujian:', soal);
       
       res.render('siswa/ujian', { user: req.session.user, ujian: ujian, soal: soal });
     });
