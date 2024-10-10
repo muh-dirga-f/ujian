@@ -705,7 +705,8 @@ app.get('/guru/ujian/add', (req, res) => {
     SELECT k.id_kelas, k.kelas, k.minor_kelas, m.id_mapel, m.nama_mapel
     FROM kelas k
     JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
-    WHERE k.id_guru = ?
+    JOIN kelas_guru kg ON k.id_kelas = kg.id_kelas
+    WHERE kg.id_guru = ?
   `, [req.session.user.id], (err, rows) => {
     if (err) {
       console.error(err);
