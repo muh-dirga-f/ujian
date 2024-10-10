@@ -753,15 +753,17 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
       return res.status(404).send('Ujian tidak ditemukan');
     }
     
-    // Fetch student answers
+    // Fetch student scores and answers count
     db.all(`
-      SELECT js.*, s.fullname, s.nis, n.status, n.nilai_total
-      FROM jawaban_siswa js
-      JOIN siswa s ON js.nis = s.nis
-      LEFT JOIN nilai_ujian n ON n.id_ujian = js.id_ujian AND n.nis = js.nis
-      WHERE js.id_ujian = ?
-      GROUP BY s.nis, n.nilai_total, n.status
-    `, [id], (err, jawaban) => {
+      SELECT s.nis, s.fullname, n.nilai_total, n.status,
+             COUNT(js.id_soal) as count
+      FROM siswa s
+      LEFT JOIN nilai_ujian n ON n.id_ujian = ? AND n.nis = s.nis
+      LEFT JOIN jawaban_siswa js ON js.id_ujian = ? AND js.nis = s.nis
+      JOIN kelas_siswa ks ON ks.nis = s.nis
+      WHERE ks.kelas = ? AND ks.kelas_minor = ?
+      GROUP BY s.nis
+    `, [id, id, ujian.kelas, ujian.minor_kelas], (err, jawaban) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');

@@ -65,26 +65,12 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <% 
-                    const groupedJawaban = jawaban.reduce((acc, curr) => {
-                      if (!acc[curr.nis]) {
-                        acc[curr.nis] = { 
-                          nis: curr.nis, 
-                          fullname: curr.fullname, 
-                          count: 0,
-                          status: curr.status || 'belum_dinilai'
-                        };
-                      }
-                      acc[curr.nis].count++;
-                      return acc;
-                    }, {});
-                    
-                    Object.values(groupedJawaban).forEach(function(siswa) { %>
+                    <% jawaban.forEach(function(siswa) { %>
                       <tr>
                         <td><%= siswa.nis %></td>
                         <td><%= siswa.fullname %></td>
                         <td><%= siswa.count %></td>
-                        <td><%= siswa.nilai_total !== null && siswa.nilai_total !== undefined ? siswa.nilai_total : 'Belum dinilai' %></td>
+                        <td><%= siswa.nilai_total !== null ? siswa.nilai_total : 'Belum dinilai' %></td>
                         <td>
                           <% if (siswa.status === 'sudah_dinilai') { %>
                             <span class="badge badge-success">Sudah Dinilai</span>
