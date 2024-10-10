@@ -66,14 +66,6 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       tahun INTEGER,
       FOREIGN KEY (id_sekolah) REFERENCES sekolah(id_sekolah)
     )`);
-    
-    db.run(`CREATE TABLE IF NOT EXISTS kelas_guru (
-      id_kelas_guru INTEGER PRIMARY KEY AUTOINCREMENT,
-      id_kelas INTEGER,
-      id_guru INTEGER,
-      FOREIGN KEY (id_kelas) REFERENCES kelas(id_kelas),
-      FOREIGN KEY (id_guru) REFERENCES guru(id_guru)
-    )`);
     db.run(`CREATE TABLE IF NOT EXISTS mata_pelajaran (
       id_mapel INTEGER PRIMARY KEY AUTOINCREMENT,
       id_kelas INTEGER,
@@ -705,14 +697,12 @@ app.get('/guru/ujian/add', (req, res) => {
     SELECT k.id_kelas, k.kelas, k.minor_kelas, m.id_mapel, m.nama_mapel
     FROM kelas k
     JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
-    JOIN kelas_guru kg ON k.id_kelas = kg.id_kelas
-    WHERE kg.id_guru = ?
+    WHERE m.id_guru = ?
   `, [req.session.user.id], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    console.log('Kelas dan mata pelajaran:', rows); // Tambahkan log ini
     res.render('guru/add_ujian', { user: req.session.user, kelasList: rows });
   });
 });
@@ -950,32 +940,32 @@ app.post('/guru/ujian/:id_ujian/nilai/:nis', (req, res) => {
   });
 });
 
-app.get('/guru/ujian/add', (req, res) => {
-  if (!req.session.user || req.session.user.type !== 'guru') {
-    return res.redirect('/');
-  }
-  db.all('SELECT id_kelas, kelas, minor_kelas FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, kelas) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.render('guru/add_ujian', { user: req.session.user, kelas: kelas });
-  });
-});
+// app.get('/guru/ujian/add', (req, res) => {
+//   if (!req.session.user || req.session.user.type !== 'guru') {
+//     return res.redirect('/');
+//   }
+//   db.all('SELECT id_kelas, kelas, minor_kelas FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, kelas) => {
+//     if (err) {
+//       console.error(err);
+//       return res.status(500).send('Server error');
+//     }
+//     res.render('guru/add_ujian', { user: req.session.user, kelas: kelas });
+//   });
+// });
 
-app.post('/guru/ujian/add', (req, res) => {
-  if (!req.session.user || req.session.user.type !== 'guru') {
-    return res.redirect('/');
-  }
-  const { id_kelas, nama_mapel } = req.body;
-  db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel) VALUES (?, ?)', [id_kelas, nama_mapel], (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.redirect('/guru/ujian');
-  });
-});
+// app.post('/guru/ujian/add', (req, res) => {
+//   if (!req.session.user || req.session.user.type !== 'guru') {
+//     return res.redirect('/');
+//   }
+//   const { id_kelas, nama_mapel } = req.body;
+//   db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel) VALUES (?, ?)', [id_kelas, nama_mapel], (err) => {
+//     if (err) {
+//       console.error(err);
+//       return res.status(500).send('Server error');
+//     }
+//     res.redirect('/guru/ujian');
+//   });
+// });
 
 app.get('/guru/ujian/edit/:id_kelas/:id_mapel', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'guru') {
@@ -1425,16 +1415,6 @@ app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), 
         console.error(err);
         return res.status(500).send('Server error');
       }
-      const id_kelas = this.lastID;
-      db.run('INSERT INTO kelas_guru (id_kelas, id_guru) VALUES (?, ?)',
-        [id_kelas, id_guru],
-        function(err) {
-          if (err) {
-            console.error(err);
-            return res.status(500).send('Server error');
-          }
-          res.redirect('/admin_sekolah/kelas');
-        });
     });
 });
 
@@ -1459,15 +1439,6 @@ app.post('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekola
         console.error(err);
         return res.status(500).send('Server error');
       }
-      db.run('UPDATE kelas_guru SET id_guru = ? WHERE id_kelas = ?',
-        [id_guru, id],
-        function(err) {
-          if (err) {
-            console.error(err);
-            return res.status(500).send('Server error');
-          }
-          res.redirect('/admin_sekolah/kelas');
-        });
     });
 });
 
