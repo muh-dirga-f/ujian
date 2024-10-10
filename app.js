@@ -1548,6 +1548,82 @@ app.get('/admin_sekolah/siswa/delete/:id', checkAuth, checkUserType('admin_sekol
   });
 });
 
+// Rute untuk manajemen kelas
+app.get('/admin_sekolah/kelas', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  db.all('SELECT k.*, g.fullname AS nama_guru FROM kelas k LEFT JOIN guru g ON k.id_guru = g.id_guru WHERE k.id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/kelas', { user: req.session.user, kelas: rows });
+  });
+});
+
+app.get('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  db.all('SELECT id_guru, fullname FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, guru) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/add_kelas', { user: req.session.user, guru: guru });
+  });
+});
+
+app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { kelas, minor_kelas, tahun, id_guru } = req.body;
+  db.run('INSERT INTO kelas (kelas, minor_kelas, tahun, id_guru, id_sekolah) VALUES (?, ?, ?, ?, ?)',
+    [kelas, minor_kelas, tahun, id_guru, req.session.user.id_sekolah],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin_sekolah/kelas');
+    });
+});
+
+app.get('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.get('SELECT * FROM kelas WHERE id_kelas = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], (err, kelas) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    db.all('SELECT id_guru, fullname FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, guru) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('admin_sekolah/edit_kelas', { user: req.session.user, kelas: kelas, guru: guru });
+    });
+  });
+});
+
+app.post('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  const { kelas, minor_kelas, tahun, id_guru } = req.body;
+  db.run('UPDATE kelas SET kelas = ?, minor_kelas = ?, tahun = ?, id_guru = ? WHERE id_kelas = ? AND id_sekolah = ?',
+    [kelas, minor_kelas, tahun, id_guru, id, req.session.user.id_sekolah],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin_sekolah/kelas');
+    });
+});
+
+app.get('/admin_sekolah/kelas/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM kelas WHERE id_kelas = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/admin_sekolah/kelas');
+  });
+});
+
 // Rute untuk menghapus guru
 app.get('/admin_sekolah/guru/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
