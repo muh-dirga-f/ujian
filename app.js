@@ -941,33 +941,6 @@ app.post('/guru/ujian/:id_ujian/nilai/:nis', (req, res) => {
   });
 });
 
-// app.get('/guru/ujian/add', (req, res) => {
-//   if (!req.session.user || req.session.user.type !== 'guru') {
-//     return res.redirect('/');
-//   }
-//   db.all('SELECT id_kelas, kelas, minor_kelas FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, kelas) => {
-//     if (err) {
-//       console.error(err);
-//       return res.status(500).send('Server error');
-//     }
-//     res.render('guru/add_ujian', { user: req.session.user, kelas: kelas });
-//   });
-// });
-
-// app.post('/guru/ujian/add', (req, res) => {
-//   if (!req.session.user || req.session.user.type !== 'guru') {
-//     return res.redirect('/');
-//   }
-//   const { id_kelas, nama_mapel } = req.body;
-//   db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel) VALUES (?, ?)', [id_kelas, nama_mapel], (err) => {
-//     if (err) {
-//       console.error(err);
-//       return res.status(500).send('Server error');
-//     }
-//     res.redirect('/guru/ujian');
-//   });
-// });
-
 app.get('/guru/ujian/edit/:id_kelas/:id_mapel', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'guru') {
     return res.redirect('/');
