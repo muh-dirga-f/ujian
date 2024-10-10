@@ -71,8 +71,10 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
     db.run(`CREATE TABLE IF NOT EXISTS mata_pelajaran (
       id_mapel INTEGER PRIMARY KEY AUTOINCREMENT,
       id_kelas INTEGER,
+      id_guru INTEGER,
       nama_mapel TEXT,
-      FOREIGN KEY (id_kelas) REFERENCES kelas(id_kelas)
+      FOREIGN KEY (id_kelas) REFERENCES kelas(id_kelas),
+      FOREIGN KEY (id_guru) REFERENCES guru(id_guru)
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS ujian (
       id_ujian INTEGER PRIMARY KEY AUTOINCREMENT,
