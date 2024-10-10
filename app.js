@@ -60,12 +60,10 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS kelas (
       id_kelas INTEGER PRIMARY KEY AUTOINCREMENT,
-      id_guru INTEGER,
       id_sekolah INTEGER,
       kelas TEXT,
       minor_kelas TEXT,
       tahun INTEGER,
-      FOREIGN KEY (id_guru) REFERENCES guru(id_guru),
       FOREIGN KEY (id_sekolah) REFERENCES sekolah(id_sekolah)
     )`);
     db.run(`CREATE TABLE IF NOT EXISTS mata_pelajaran (
@@ -1552,7 +1550,7 @@ app.get('/admin_sekolah/siswa/delete/:id', checkAuth, checkUserType('admin_sekol
 
 // Rute untuk manajemen kelas
 app.get('/admin_sekolah/kelas', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  db.all('SELECT k.*, g.fullname AS nama_guru FROM kelas k LEFT JOIN guru g ON k.id_guru = g.id_guru WHERE k.id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+  db.all('SELECT k.* FROM kelas k WHERE k.id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1572,9 +1570,9 @@ app.get('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (
 });
 
 app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  const { kelas, minor_kelas, tahun, id_guru } = req.body;
-  db.run('INSERT INTO kelas (kelas, minor_kelas, tahun, id_guru, id_sekolah) VALUES (?, ?, ?, ?, ?)',
-    [kelas, minor_kelas, tahun, id_guru, req.session.user.id_sekolah],
+  const { kelas, minor_kelas, tahun } = req.body;
+  db.run('INSERT INTO kelas (kelas, minor_kelas, tahun, id_sekolah) VALUES (?, ?, ?, ?)',
+    [kelas, minor_kelas, tahun, req.session.user.id_sekolah],
     function(err) {
       if (err) {
         console.error(err);
@@ -1603,9 +1601,9 @@ app.get('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah
 
 app.post('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  const { kelas, minor_kelas, tahun, id_guru } = req.body;
-  db.run('UPDATE kelas SET kelas = ?, minor_kelas = ?, tahun = ?, id_guru = ? WHERE id_kelas = ? AND id_sekolah = ?',
-    [kelas, minor_kelas, tahun, id_guru, id, req.session.user.id_sekolah],
+  const { kelas, minor_kelas, tahun } = req.body;
+  db.run('UPDATE kelas SET kelas = ?, minor_kelas = ?, tahun = ? WHERE id_kelas = ? AND id_sekolah = ?',
+    [kelas, minor_kelas, tahun, id, req.session.user.id_sekolah],
     function(err) {
       if (err) {
         console.error(err);
