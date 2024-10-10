@@ -263,6 +263,10 @@ app.get('/admin_sekolah/dashboard', checkAuth, checkUserType('admin_sekolah'), (
   res.render('admin_sekolah/dashboard', { user: req.session.user });
 });
 
+app.get('/admin_sekolah/dashboard', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  res.render('admin_sekolah/dashboard', { user: req.session.user });
+});
+
 // Rute untuk manajemen pengguna
 app.get('/admin/users', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
@@ -1416,6 +1420,64 @@ app.post('/siswa/update-kelas', (req, res) => {
         });
     }
   });
+});
+
+// Rute untuk menampilkan daftar guru
+app.get('/admin_sekolah/guru', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  db.all('SELECT * FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/guru', { user: req.session.user, guru: rows });
+  });
+});
+
+// Rute untuk menambah guru
+app.get('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  res.render('admin_sekolah/add_guru', { user: req.session.user });
+});
+
+app.post('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { fullname, username, password, nip } = req.body;
+  db.run('INSERT INTO guru (fullname, username, password, id_sekolah, nip) VALUES (?, ?, ?, ?, ?)',
+    [fullname, username, password, req.session.user.id_sekolah, nip],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin_sekolah/guru');
+    });
+});
+
+// Rute untuk menampilkan daftar siswa
+app.get('/admin_sekolah/siswa', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  db.all('SELECT * FROM siswa WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/siswa', { user: req.session.user, siswa: rows });
+  });
+});
+
+// Rute untuk menambah siswa
+app.get('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  res.render('admin_sekolah/add_siswa', { user: req.session.user });
+});
+
+app.post('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { fullname, nis, password } = req.body;
+  db.run('INSERT INTO siswa (fullname, nis, password, id_sekolah) VALUES (?, ?, ?, ?)',
+    [fullname, nis, password, req.session.user.id_sekolah],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin_sekolah/siswa');
+    });
 });
 
 // Rute untuk menampilkan daftar guru
