@@ -278,6 +278,8 @@ app.get('/admin/users', (req, res) => {
     SELECT id_siswa AS id, fullname, nis AS username, 'siswa' AS user_type, id_sekolah, NULL AS nip, nis, 'siswa' AS id_type FROM siswa
     UNION ALL
     SELECT id_admin AS id, fullname, username, 'admin' AS user_type, NULL AS id_sekolah, NULL AS nip, NULL AS nis, 'admin' AS id_type FROM admin
+    UNION ALL
+    SELECT id_admin_sekolah AS id, fullname, username, 'admin_sekolah' AS user_type, id_sekolah, NULL AS nip, NULL AS nis, 'admin_sekolah' AS id_type FROM admin_sekolah
   `, [], (err, rows) => {
     if (err) {
       console.error(err);
@@ -313,6 +315,10 @@ app.post('/admin/users/add', (req, res) => {
     case 'admin':
       query = 'INSERT INTO admin (fullname, username, password) VALUES (?, ?, ?)';
       params = [fullname, username, password];
+      break;
+    case 'admin_sekolah':
+      query = 'INSERT INTO admin_sekolah (fullname, username, password, id_sekolah) VALUES (?, ?, ?, ?)';
+      params = [fullname, username, password, id_sekolah];
       break;
     default:
       return res.status(400).send('Invalid user type');
@@ -440,31 +446,6 @@ app.get('/admin/users/delete/:id/:type', (req, res) => {
     }
     res.redirect('/admin/users');
   });
-});
-
-// Rute untuk menampilkan form tambah admin sekolah
-app.get('/admin/add_admin_sekolah', checkAuth, checkUserType('admin'), (req, res) => {
-  db.all('SELECT id_sekolah, nama_sekolah FROM sekolah', [], (err, schools) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.render('admin/add_admin_sekolah', { user: req.session.user, schools: schools });
-  });
-});
-
-// Rute untuk memproses penambahan admin sekolah
-app.post('/admin/add_admin_sekolah', checkAuth, checkUserType('admin'), (req, res) => {
-  const { fullname, username, password, id_sekolah } = req.body;
-  db.run('INSERT INTO admin_sekolah (fullname, username, password, id_sekolah) VALUES (?, ?, ?, ?)',
-    [fullname, username, password, id_sekolah],
-    function(err) {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Server error');
-      }
-      res.redirect('/admin/users');
-    });
 });
 
 // Rute untuk manajemen sekolah
