@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manajemen Kelas - Sistem Ujian Sekolah</title>
+  <title>Daftar Mata Pelajaran - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Manajemen Kelas</h1>
+            <h1>Daftar Mata Pelajaran</h1>
           </div>
         </div>
       </div>
@@ -34,10 +34,10 @@
           <div class="col-12">
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Daftar Kelas</h3>
+                <h3 class="card-title">Mata Pelajaran untuk Kelas <%= id_kelas %></h3>
                 <div class="card-tools">
-                  <a href="/admin_sekolah/kelas/add" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Kelas
+                  <a href="/admin_sekolah/kelas/<%= id_kelas %>/mapel/add" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Mata Pelajaran
                   </a>
                 </div>
               </div>
@@ -45,27 +45,20 @@
                 <table class="table table-hover text-nowrap">
                   <thead>
                     <tr>
-                      <th>Kelas</th>
-                      <th>Minor Kelas</th>
-                      <th>Tahun</th>
+                      <th>Nama Mata Pelajaran</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <% kelas.forEach(function(k) { %>
+                    <% mapel.forEach(function(m) { %>
                       <tr>
-                        <td><%= k.kelas %></td>
-                        <td><%= k.minor_kelas %></td>
-                        <td><%= k.tahun %></td>
+                        <td><%= m.nama_mapel %></td>
                         <td>
-                          <a href="/admin_sekolah/kelas/edit/<%= k.id_kelas %>" class="btn btn-info btn-sm">
+                          <a href="/admin_sekolah/kelas/<%= id_kelas %>/mapel/edit/<%= m.id_mapel %>" class="btn btn-info btn-sm">
                             <i class="fas fa-edit"></i> Edit
                           </a>
-                          <a href="/admin_sekolah/kelas/delete/<%= k.id_kelas %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
+                          <a href="/admin_sekolah/kelas/<%= id_kelas %>/mapel/delete/<%= m.id_mapel %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?');">
                             <i class="fas fa-trash"></i> Hapus
-                          </a>
-                          <a href="/admin_sekolah/kelas/<%= k.id_kelas %>/mapel" class="btn btn-info btn-sm">
-                            <i class="fas fa-book"></i> Lihat Mapel
                           </a>
                         </td>
                       </tr>

@@ -1624,6 +1624,18 @@ app.get('/admin_sekolah/kelas/delete/:id', checkAuth, checkUserType('admin_sekol
   });
 });
 
+// Rute untuk melihat daftar mata pelajaran dalam kelas
+app.get('/admin_sekolah/kelas/:id/mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.all('SELECT * FROM mata_pelajaran WHERE id_kelas = ?', [id], (err, mapel) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/mapel', { user: req.session.user, mapel: mapel, id_kelas: id });
+  });
+});
+
 // Rute untuk menghapus guru
 app.get('/admin_sekolah/guru/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
