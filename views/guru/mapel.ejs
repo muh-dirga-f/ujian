@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manajemen Mata Pelajaran - Sistem Ujian Sekolah</title>
+  <title>Manajemen Kelas dan Mata Pelajaran - Sistem Ujian Sekolah</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -22,7 +22,7 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Manajemen Mata Pelajaran</h1>
+            <h1>Manajemen Kelas dan Mata Pelajaran</h1>
           </div>
         </div>
       </div>
@@ -30,47 +30,44 @@
 
     <section class="content">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Daftar Mata Pelajaran</h3>
-                <div class="card-tools">
-                  <a href="/guru/kelas/<%= id_kelas %>/mapel/add" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Mata Pelajaran
-                  </a>
-                </div>
-              </div>
-              <div class="card-body table-responsive p-0">
-                <table class="table table-hover text-nowrap">
-                  <thead>
+        <% classes.forEach(function(kelas) { %>
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Kelas <%= kelas.nama_kelas %></h3>
+            </div>
+            <div class="card-body">
+              <h4>Mata Pelajaran</h4>
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama Mata Pelajaran</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% kelas.subjects.forEach(function(mapel) { %>
                     <tr>
-                      <th>ID</th>
-                      <th>Nama Mata Pelajaran</th>
-                      <th>Aksi</th>
+                      <td><%= mapel.id_mapel %></td>
+                      <td><%= mapel.nama_mapel %></td>
+                      <td>
+                        <a href="/guru/kelas/<%= kelas.id_kelas %>/mapel/edit/<%= mapel.id_mapel %>" class="btn btn-info btn-sm">
+                          <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="/guru/kelas/<%= kelas.id_kelas %>/mapel/delete/<%= mapel.id_mapel %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?');">
+                          <i class="fas fa-trash"></i> Hapus
+                        </a>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    <% mapel.forEach(function(mapel) { %>
-                      <tr>
-                        <td><%= mapel.id_mapel %></td>
-                        <td><%= mapel.nama_mapel %></td>
-                        <td>
-                          <a href="/guru/kelas/<%= id_kelas %>/mapel/edit/<%= mapel.id_mapel %>" class="btn btn-info btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                          </a>
-                          <a href="/guru/kelas/<%= id_kelas %>/mapel/delete/<%= mapel.id_mapel %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus mata pelajaran ini?');">
-                            <i class="fas fa-trash"></i> Hapus
-                          </a>
-                        </td>
-                      </tr>
-                    <% }); %>
-                  </tbody>
-                </table>
-              </div>
+                  <% }); %>
+                </tbody>
+              </table>
+              <a href="/guru/kelas/<%= kelas.id_kelas %>/mapel/add" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Tambah Mata Pelajaran
+              </a>
             </div>
           </div>
-        </div>
+        <% }); %>
       </div>
     </section>
   </div>
