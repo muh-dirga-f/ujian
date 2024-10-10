@@ -42,9 +42,13 @@
                     <label for="id_kelas">Kelas dan Mata Pelajaran</label>
                     <select class="form-control" id="id_kelas" name="id_kelas" required>
                       <option value="">Pilih Kelas dan Mata Pelajaran</option>
-                      <% kelasList.forEach(function(k) { %>
-                        <option value="<%= k.id_kelas %>|<%= k.id_mapel %>"><%= k.kelas %> <%= k.minor_kelas %> - <%= k.nama_mapel %></option>
-                      <% }); %>
+                      <% if (kelasList && kelasList.length > 0) { %>
+                        <% kelasList.forEach(function(k) { %>
+                          <option value="<%= k.id_kelas %>|<%= k.id_mapel %>"><%= k.kelas %> <%= k.minor_kelas %> - <%= k.nama_mapel %></option>
+                        <% }); %>
+                      <% } else { %>
+                        <option value="" disabled>Tidak ada kelas atau mata pelajaran tersedia</option>
+                      <% } %>
                     </select>
                   </div>
                   <div class="form-group">

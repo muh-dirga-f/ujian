@@ -712,6 +712,7 @@ app.get('/guru/ujian/add', (req, res) => {
       console.error(err);
       return res.status(500).send('Server error');
     }
+    console.log('Kelas dan mata pelajaran:', rows); // Tambahkan log ini
     res.render('guru/add_ujian', { user: req.session.user, kelasList: rows });
   });
 });
