@@ -1164,9 +1164,9 @@ app.post('/guru/kelas/:id/mapel/add', (req, res) => {
     return res.redirect('/');
   }
   const { id } = req.params;
-  const { nama_mapel } = req.body;
-  db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel) VALUES (?, ?)',
-    [id, nama_mapel],
+  const { nama_mapel, id_guru } = req.body;
+  db.run('INSERT INTO mata_pelajaran (id_kelas, id_guru, nama_mapel) VALUES (?, ?, ?)',
+    [id, id_guru, nama_mapel],
     function(err) {
       if (err) {
         console.error(err);
@@ -1198,9 +1198,9 @@ app.post('/guru/kelas/:id_kelas/mapel/edit/:id_mapel', (req, res) => {
     return res.redirect('/');
   }
   const { id_kelas, id_mapel } = req.params;
-  const { nama_mapel } = req.body;
-  db.run('UPDATE mata_pelajaran SET nama_mapel = ? WHERE id_mapel = ? AND id_kelas = ?',
-    [nama_mapel, id_mapel, id_kelas],
+  const { nama_mapel, id_guru } = req.body;
+  db.run('UPDATE mata_pelajaran SET nama_mapel = ?, id_guru = ? WHERE id_mapel = ? AND id_kelas = ?',
+    [nama_mapel, id_guru, id_mapel, id_kelas],
     function(err) {
       if (err) {
         console.error(err);
