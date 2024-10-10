@@ -1,28 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Sekolah Dashboard</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard Admin Sekolah - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Admin Sekolah</a>
-        <div class="navbar-nav">
-            <a class="nav-item nav-link" href="/admin_sekolah/guru">Guru</a>
-            <a class="nav-item nav-link" href="/admin_sekolah/siswa">Siswa</a>
-            <a class="nav-item nav-link" href="/logout">Logout</a>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Dashboard Admin Sekolah</h1>
+          </div>
         </div>
-    </nav>
+      </div>
+    </section>
 
-    <div class="container mt-4">
-        <h1>Selamat datang, <%= user.fullname %></h1>
-        <p>Ini adalah dashboard Admin Sekolah.</p>
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3>Guru</h3>
+                <p>Manajemen Guru</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-chalkboard-teacher"></i>
+              </div>
+              <a href="/admin_sekolah/guru" class="small-box-footer">
+                Lihat detail <i class="fas fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3>Siswa</h3>
+                <p>Manajemen Siswa</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-user-graduate"></i>
+              </div>
+              <a href="/admin_sekolah/siswa" class="small-box-footer">
+                Lihat detail <i class="fas fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
     </div>
+  </footer>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 </body>
 </html>

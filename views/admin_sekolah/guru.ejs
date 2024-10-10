@@ -1,51 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Guru</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="/admin_sekolah/dashboard">Admin Sekolah</a>
-        <div class="navbar-nav">
-            <a class="nav-item nav-link active" href="/admin_sekolah/guru">Guru</a>
-            <a class="nav-item nav-link" href="/admin_sekolah/siswa">Siswa</a>
-            <a class="nav-item nav-link" href="/logout">Logout</a>
-        </div>
-    </nav>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manajemen Guru - Sistem Ujian Sekolah</title>
 
-    <div class="container mt-4">
-        <h1>Daftar Guru</h1>
-        <a href="/admin_sekolah/guru/add" class="btn btn-primary mb-3">Tambah Guru</a>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Nama</th>
-                    <th>Username</th>
-                    <th>NIP</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% guru.forEach(function(g) { %>
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Manajemen Guru</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Daftar Guru</h3>
+                <div class="card-tools">
+                  <a href="/admin_sekolah/guru/add" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Guru
+                  </a>
+                </div>
+              </div>
+              <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                  <thead>
                     <tr>
+                      <th>Nama</th>
+                      <th>Username</th>
+                      <th>NIP</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% guru.forEach(function(g) { %>
+                      <tr>
                         <td><%= g.fullname %></td>
                         <td><%= g.username %></td>
                         <td><%= g.nip %></td>
                         <td>
-                            <a href="/admin_sekolah/guru/edit/<%= g.id_guru %>" class="btn btn-sm btn-warning">Edit</a>
-                            <a href="/admin_sekolah/guru/delete/<%= g.id_guru %>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus guru ini?')">Hapus</a>
+                          <a href="/admin_sekolah/guru/edit/<%= g.id_guru %>" class="btn btn-info btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                          </a>
+                          <a href="/admin_sekolah/guru/delete/<%= g.id_guru %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus guru ini?');">
+                            <i class="fas fa-trash"></i> Hapus
+                          </a>
                         </td>
-                    </tr>
-                <% }); %>
-            </tbody>
-        </table>
-    </div>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
+    </div>
+  </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
 </body>
 </html>
