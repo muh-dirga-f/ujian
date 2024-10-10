@@ -53,19 +53,21 @@
                   </thead>
                   <tbody>
                     <% guru.forEach(function(g) { %>
-                      <tr>
-                        <td><%= g.fullname %></td>
-                        <td><%= g.username %></td>
-                        <td><%= g.nip %></td>
-                        <td>
-                          <a href="/admin_sekolah/guru/edit/<%= g.id_guru %>" class="btn btn-info btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                          </a>
-                          <a href="/admin_sekolah/guru/delete/<%= g.id_guru %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus guru ini?');">
-                            <i class="fas fa-trash"></i> Hapus
-                          </a>
-                        </td>
-                      </tr>
+                      <% if (g.id_sekolah === user.id_sekolah) { %>
+                        <tr>
+                          <td><%= g.fullname %></td>
+                          <td><%= g.username %></td>
+                          <td><%= g.nip %></td>
+                          <td>
+                            <a href="/admin_sekolah/guru/edit/<%= g.id_guru %>" class="btn btn-info btn-sm">
+                              <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="/admin_sekolah/guru/delete/<%= g.id_guru %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus guru ini?');">
+                              <i class="fas fa-trash"></i> Hapus
+                            </a>
+                          </td>
+                        </tr>
+                      <% } %>
                     <% }); %>
                   </tbody>
                 </table>

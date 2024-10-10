@@ -1433,7 +1433,7 @@ app.post('/siswa/update-kelas', (req, res) => {
 
 // Rute untuk menampilkan daftar guru
 app.get('/admin_sekolah/guru', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  db.all('SELECT * FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+  db.all('SELECT * FROM guru', [], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
