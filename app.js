@@ -579,7 +579,7 @@ app.get('/guru/ujian', (req, res) => {
     FROM ujian u
     JOIN kelas k ON u.id_kelas = k.id_kelas
     JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
-    WHERE k.id_guru = ?
+    WHERE m.id_guru = ?
     ORDER BY u.waktu_mulai DESC
   `, [req.session.user.id], (err, rows) => {
     if (err) {
@@ -1580,13 +1580,7 @@ app.get('/admin_sekolah/kelas', checkAuth, checkUserType('admin_sekolah'), (req,
 });
 
 app.get('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  db.all('SELECT id_guru, fullname FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, guru) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.render('admin_sekolah/add_kelas', { user: req.session.user, guru: guru });
-  });
+  res.render('admin_sekolah/add_kelas', { user: req.session.user });
 });
 
 app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
