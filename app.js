@@ -736,12 +736,13 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
   }
   const { id } = req.params;
   
-  // Fetch exam details
+  // Fetch exam details and teacher's school
   db.get(`
-    SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas
+    SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas, g.id_sekolah
     FROM ujian u
     JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
     JOIN kelas k ON u.id_kelas = k.id_kelas
+    JOIN guru g ON k.id_guru = g.id_guru
     WHERE u.id_ujian = ?
   `, [id], (err, ujian) => {
     if (err) {
@@ -761,9 +762,9 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
       LEFT JOIN nilai_ujian n ON n.id_ujian = ? AND n.nis = s.nis
       LEFT JOIN jawaban_siswa js ON js.id_ujian = ? AND js.nis = s.nis
       JOIN kelas_siswa ks ON ks.nis = s.nis
-      WHERE ks.kelas = ? AND ks.kelas_minor = ?
+      WHERE ks.kelas = ? AND ks.kelas_minor = ? AND s.id_sekolah = ?
       GROUP BY s.nis
-    `, [id, id, ujian.kelas, ujian.minor_kelas], (err, jawaban) => {
+    `, [id, id, ujian.kelas, ujian.minor_kelas, ujian.id_sekolah], (err, jawaban) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
