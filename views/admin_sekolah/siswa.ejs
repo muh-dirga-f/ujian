@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Siswa</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/admin_sekolah/dashboard">Admin Sekolah</a>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/admin_sekolah/guru">Guru</a>
+            <a class="nav-item nav-link active" href="/admin_sekolah/siswa">Siswa</a>
+            <a class="nav-item nav-link" href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Daftar Siswa</h1>
+        <a href="/admin_sekolah/siswa/add" class="btn btn-primary mb-3">Tambah Siswa</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>NIS</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% siswa.forEach(function(s) { %>
+                    <tr>
+                        <td><%= s.fullname %></td>
+                        <td><%= s.nis %></td>
+                        <td>
+                            <a href="/admin_sekolah/siswa/edit/<%= s.id_siswa %>" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="/admin_sekolah/siswa/delete/<%= s.id_siswa %>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus siswa ini?')">Hapus</a>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

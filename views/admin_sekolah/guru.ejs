@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Guru</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/admin_sekolah/dashboard">Admin Sekolah</a>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="/admin_sekolah/guru">Guru</a>
+            <a class="nav-item nav-link" href="/admin_sekolah/siswa">Siswa</a>
+            <a class="nav-item nav-link" href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Daftar Guru</h1>
+        <a href="/admin_sekolah/guru/add" class="btn btn-primary mb-3">Tambah Guru</a>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Username</th>
+                    <th>NIP</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% guru.forEach(function(g) { %>
+                    <tr>
+                        <td><%= g.fullname %></td>
+                        <td><%= g.username %></td>
+                        <td><%= g.nip %></td>
+                        <td>
+                            <a href="/admin_sekolah/guru/edit/<%= g.id_guru %>" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="/admin_sekolah/guru/delete/<%= g.id_guru %>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus guru ini?')">Hapus</a>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
