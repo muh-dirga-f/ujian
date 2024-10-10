@@ -50,6 +50,15 @@
                     <label for="tahun">Tahun</label>
                     <input type="number" class="form-control" id="tahun" name="tahun" required>
                   </div>
+                  <div class="form-group">
+                    <label for="id_guru">Guru</label>
+                    <select class="form-control" id="id_guru" name="id_guru" required>
+                      <option value="">Pilih Guru</option>
+                      <% guru.forEach(function(g) { %>
+                        <option value="<%= g.id_guru %>"><%= g.fullname %></option>
+                      <% }); %>
+                    </select>
+                  </div>
                   <button type="submit" class="btn btn-primary">Tambah Kelas</button>
                 </form>
               </div>

@@ -66,6 +66,14 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       tahun INTEGER,
       FOREIGN KEY (id_sekolah) REFERENCES sekolah(id_sekolah)
     )`);
+    
+    db.run(`CREATE TABLE IF NOT EXISTS kelas_guru (
+      id_kelas_guru INTEGER PRIMARY KEY AUTOINCREMENT,
+      id_kelas INTEGER,
+      id_guru INTEGER,
+      FOREIGN KEY (id_kelas) REFERENCES kelas(id_kelas),
+      FOREIGN KEY (id_guru) REFERENCES guru(id_guru)
+    )`);
     db.run(`CREATE TABLE IF NOT EXISTS mata_pelajaran (
       id_mapel INTEGER PRIMARY KEY AUTOINCREMENT,
       id_kelas INTEGER,
@@ -1015,7 +1023,12 @@ app.get('/guru/kelas', (req, res) => {
     return res.redirect('/');
   }
   // Ambil daftar kelas dari database
-  db.all('SELECT * FROM kelas WHERE id_guru = ?', [req.session.user.id], (err, rows) => {
+  db.all(`
+    SELECT k.* 
+    FROM kelas k
+    JOIN kelas_guru kg ON k.id_kelas = kg.id_kelas
+    WHERE kg.id_guru = ?
+  `, [req.session.user.id], (err, rows) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1570,7 +1583,7 @@ app.get('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (
 });
 
 app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  const { kelas, minor_kelas, tahun } = req.body;
+  const { kelas, minor_kelas, tahun, id_guru } = req.body;
   db.run('INSERT INTO kelas (kelas, minor_kelas, tahun, id_sekolah) VALUES (?, ?, ?, ?)',
     [kelas, minor_kelas, tahun, req.session.user.id_sekolah],
     function(err) {
@@ -1578,7 +1591,16 @@ app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), 
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.redirect('/admin_sekolah/kelas');
+      const id_kelas = this.lastID;
+      db.run('INSERT INTO kelas_guru (id_kelas, id_guru) VALUES (?, ?)',
+        [id_kelas, id_guru],
+        function(err) {
+          if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+          }
+          res.redirect('/admin_sekolah/kelas');
+        });
     });
 });
 
@@ -1601,7 +1623,7 @@ app.get('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah
 
 app.post('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  const { kelas, minor_kelas, tahun } = req.body;
+  const { kelas, minor_kelas, tahun, id_guru } = req.body;
   db.run('UPDATE kelas SET kelas = ?, minor_kelas = ?, tahun = ? WHERE id_kelas = ? AND id_sekolah = ?',
     [kelas, minor_kelas, tahun, id, req.session.user.id_sekolah],
     function(err) {
@@ -1609,7 +1631,15 @@ app.post('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekola
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.redirect('/admin_sekolah/kelas');
+      db.run('UPDATE kelas_guru SET id_guru = ? WHERE id_kelas = ?',
+        [id_guru, id],
+        function(err) {
+          if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+          }
+          res.redirect('/admin_sekolah/kelas');
+        });
     });
 });
 
