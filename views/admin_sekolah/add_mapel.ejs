@@ -44,7 +44,7 @@
                   </div>
                   <div class="form-group">
                     <label for="id_guru">Guru Pengajar</label>
-                    <select class="form-control" id="id_guru" name="id_guru">
+                    <select class="form-control" id="id_guru" name="id_guru" required>
                       <option value="">Pilih Guru</option>
                       <% guru.forEach(function(g) { %>
                         <option value="<%= g.id_guru %>"><%= g.fullname %></option>
