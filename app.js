@@ -1196,6 +1196,28 @@ app.get('/siswa/jadwal-ujian', (req, res) => {
   });
 });
 
+app.get('/siswa/nilai', (req, res) => {
+  if (!req.session.user || req.session.user.type !== 'siswa') {
+    return res.redirect('/');
+  }
+  
+  db.all(`
+    SELECT u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas, nu.nilai_total, nu.status
+    FROM nilai_ujian nu
+    JOIN ujian u ON nu.id_ujian = u.id_ujian
+    JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+    JOIN kelas k ON u.id_kelas = k.id_kelas
+    WHERE nu.nis = ?
+    ORDER BY u.waktu_mulai DESC
+  `, [req.session.user.username], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('siswa/nilai', { user: req.session.user, nilaiUjian: rows });
+  });
+});
+
 app.get('/siswa/ujian/:id', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
