@@ -82,6 +82,13 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       FOREIGN KEY (id_kelas) REFERENCES kelas(id_kelas),
       FOREIGN KEY (id_guru) REFERENCES guru(id_guru)
     )`);
+
+    // Alter table to add id_guru column if it doesn't exist
+    db.run(`PRAGMA foreign_keys=off;
+    BEGIN TRANSACTION;
+    ALTER TABLE mata_pelajaran ADD COLUMN id_guru INTEGER REFERENCES guru(id_guru);
+    COMMIT;
+    PRAGMA foreign_keys=on;`);
     db.run(`CREATE TABLE IF NOT EXISTS ujian (
       id_ujian INTEGER PRIMARY KEY AUTOINCREMENT,
       judul_ujian TEXT,
