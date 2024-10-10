@@ -27,6 +27,14 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       username TEXT UNIQUE,
       password TEXT
     )`);
+    db.run(`CREATE TABLE IF NOT EXISTS admin_sekolah (
+      id_admin_sekolah INTEGER PRIMARY KEY AUTOINCREMENT,
+      fullname TEXT,
+      username TEXT UNIQUE,
+      password TEXT,
+      id_sekolah INTEGER,
+      FOREIGN KEY (id_sekolah) REFERENCES sekolah(id_sekolah)
+    )`);
     db.run(`CREATE TABLE IF NOT EXISTS siswa (
       id_siswa INTEGER PRIMARY KEY AUTOINCREMENT,
       nis TEXT UNIQUE,
@@ -172,6 +180,11 @@ app.post('/login', (req, res) => {
       query = `SELECT * FROM ${table} WHERE username = ?`;
       param = username;
       break;
+    case 'admin_sekolah':
+      table = 'admin_sekolah';
+      query = `SELECT * FROM ${table} WHERE username = ?`;
+      param = username;
+      break;
     case 'siswa':
       table = 'siswa';
       query = `SELECT * FROM ${table} WHERE nis = ?`;
@@ -193,7 +206,7 @@ app.post('/login', (req, res) => {
 
     if (password === row.password) {
       req.session.user = { 
-        id: row.id_guru || row.id_admin || row.id_siswa, 
+        id: row.id_guru || row.id_admin || row.id_admin_sekolah || row.id_siswa, 
         username: row.username || row.nis, 
         fullname: row.fullname,
         type: userType,
@@ -244,6 +257,10 @@ const checkUserType = (type) => {
 
 app.get('/admin/dashboard', checkAuth, checkUserType('admin'), (req, res) => {
   res.render('admin/dashboard', { user: req.session.user });
+});
+
+app.get('/admin_sekolah/dashboard', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  res.render('admin_sekolah/dashboard', { user: req.session.user });
 });
 
 // Rute untuk manajemen pengguna
@@ -1409,6 +1426,64 @@ app.get('/logout', (req, res) => {
     res.clearCookie('connect.sid');
     res.redirect('/');
   });
+});
+
+// Rute untuk menampilkan daftar guru
+app.get('/admin_sekolah/guru', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  db.all('SELECT * FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/guru', { user: req.session.user, guru: rows });
+  });
+});
+
+// Rute untuk menambah guru
+app.get('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  res.render('admin_sekolah/add_guru', { user: req.session.user });
+});
+
+app.post('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { fullname, username, password, nip } = req.body;
+  db.run('INSERT INTO guru (fullname, username, password, id_sekolah, nip) VALUES (?, ?, ?, ?, ?)',
+    [fullname, username, password, req.session.user.id_sekolah, nip],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin_sekolah/guru');
+    });
+});
+
+// Rute untuk menampilkan daftar siswa
+app.get('/admin_sekolah/siswa', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  db.all('SELECT * FROM siswa WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/siswa', { user: req.session.user, siswa: rows });
+  });
+});
+
+// Rute untuk menambah siswa
+app.get('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  res.render('admin_sekolah/add_siswa', { user: req.session.user });
+});
+
+app.post('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { fullname, nis, password } = req.body;
+  db.run('INSERT INTO siswa (fullname, nis, password, id_sekolah) VALUES (?, ?, ?, ?)',
+    [fullname, nis, password, req.session.user.id_sekolah],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin_sekolah/siswa');
+    });
 });
 
 app.listen(port, () => {
