@@ -695,10 +695,11 @@ app.get('/guru/ujian/add', (req, res) => {
   }
   db.all(`
     SELECT k.id_kelas, k.kelas, k.minor_kelas, m.id_mapel, m.nama_mapel
-    FROM kelas k
-    JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
+    FROM mata_pelajaran m
+    JOIN kelas k ON m.id_kelas = k.id_kelas
     WHERE m.id_guru = ?
   `, [req.session.user.id], (err, rows) => {
+    console.log(req.session.user.id);
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
