@@ -1409,13 +1409,7 @@ app.get('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah
       console.error(err);
       return res.status(500).send('Server error');
     }
-    db.all('SELECT id_guru, fullname FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, guru) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Server error');
-      }
-      res.render('admin_sekolah/edit_kelas', { user: req.session.user, kelas: kelas, guru: guru });
-    });
+    res.render('admin_sekolah/edit_kelas', { user: req.session.user, kelas: kelas });
   });
 });
 
@@ -1455,17 +1449,32 @@ app.get('/admin_sekolah/kelas/delete/:id', checkAuth, checkUserType('admin_sekol
 // Rute untuk melihat daftar mata pelajaran dalam kelas
 app.get('/admin_sekolah/kelas/:id/mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  db.all(`
-    SELECT m.*, g.fullname AS nama_guru
-    FROM mata_pelajaran m
-    LEFT JOIN guru g ON m.id_guru = g.id_guru
-    WHERE m.id_kelas = ?
-  `, [id], (err, mapel) => {
+  db.get('SELECT kelas, minor_kelas FROM kelas WHERE id_kelas = ?', [id], (err, kelas) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    res.render('admin_sekolah/mapel', { user: req.session.user, mapel: mapel, id_kelas: id });
+    if (!kelas) {
+      return res.status(404).send('Kelas tidak ditemukan');
+    }
+    db.all(`
+      SELECT m.*, g.fullname AS nama_guru
+      FROM mata_pelajaran m
+      LEFT JOIN guru g ON m.id_guru = g.id_guru
+      WHERE m.id_kelas = ?
+    `, [id], (err, mapel) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('admin_sekolah/mapel', { 
+        user: req.session.user, 
+        mapel: mapel, 
+        id_kelas: id,
+        kelas: kelas.kelas,
+        minor_kelas: kelas.minor_kelas
+      });
+    });
   });
 });
 
