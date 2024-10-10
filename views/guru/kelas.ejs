@@ -70,7 +70,10 @@
                           <a href="/guru/kelas/<%= kelas.id_kelas %>/mapel" class="btn btn-primary btn-sm">
                             <i class="fas fa-book"></i> Mata Pelajaran
                           </a>
-                          <a href="/guru/kelas/edit/<%= kelas.id_kelas %>" class="btn btn-info btn-sm">
+                          <a href="/guru/kelas/<%= kelas.id_kelas %>/siswa" class="btn btn-info btn-sm">
+                            <i class="fas fa-users"></i> Daftar Siswa
+                          </a>
+                          <a href="/guru/kelas/edit/<%= kelas.id_kelas %>" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit
                           </a>
                           <a href="/guru/kelas/delete/<%= kelas.id_kelas %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus kelas ini?');">
