@@ -260,7 +260,13 @@ app.get('/admin/dashboard', checkAuth, checkUserType('admin'), (req, res) => {
 });
 
 app.get('/admin_sekolah/dashboard', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  res.render('admin_sekolah/dashboard', { user: req.session.user });
+  db.get('SELECT * FROM sekolah WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, sekolah) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/dashboard', { user: req.session.user, sekolah: sekolah });
+  });
 });
 
 app.get('/admin_sekolah/dashboard', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
