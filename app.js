@@ -1501,6 +1501,65 @@ app.post('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), 
     });
 });
 
+// Rute untuk mengedit siswa
+app.get('/admin_sekolah/siswa/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.get('SELECT * FROM siswa WHERE id_siswa = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    if (!row) {
+      return res.status(404).send('Siswa tidak ditemukan');
+    }
+    res.render('admin_sekolah/edit_siswa', { user: req.session.user, siswa: row });
+  });
+});
+
+app.post('/admin_sekolah/siswa/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  const { fullname, nis, password } = req.body;
+  let query, params;
+  if (password) {
+    query = 'UPDATE siswa SET fullname = ?, nis = ?, password = ? WHERE id_siswa = ? AND id_sekolah = ?';
+    params = [fullname, nis, password, id, req.session.user.id_sekolah];
+  } else {
+    query = 'UPDATE siswa SET fullname = ?, nis = ? WHERE id_siswa = ? AND id_sekolah = ?';
+    params = [fullname, nis, id, req.session.user.id_sekolah];
+  }
+  db.run(query, params, function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/admin_sekolah/siswa');
+  });
+});
+
+// Rute untuk menghapus siswa
+app.get('/admin_sekolah/siswa/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM siswa WHERE id_siswa = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/admin_sekolah/siswa');
+  });
+});
+
+// Rute untuk menghapus guru
+app.get('/admin_sekolah/guru/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.run('DELETE FROM guru WHERE id_guru = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/admin_sekolah/guru');
+  });
+});
+
 // Rute untuk menampilkan daftar guru
 app.get('/admin_sekolah/guru', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   db.all('SELECT * FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
