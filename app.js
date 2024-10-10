@@ -792,7 +792,7 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
     FROM ujian u
     JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
     JOIN kelas k ON u.id_kelas = k.id_kelas
-    JOIN guru g ON k.id_guru = g.id_guru
+    JOIN guru g ON m.id_guru = g.id_guru
     WHERE u.id_ujian = ?
   `, [id], (err, ujian) => {
     if (err) {
