@@ -993,15 +993,29 @@ app.post('/guru/kelas/add', (req, res) => {
     return res.redirect('/');
   }
   const { kelas, minor_kelas, tahun } = req.body;
-  db.run('INSERT INTO kelas (id_guru, id_sekolah, kelas, minor_kelas, tahun) VALUES (?, ?, ?, ?, ?)',
-    [req.session.user.id, req.session.user.id_sekolah, kelas, minor_kelas, tahun],
-    function(err) {
-      if (err) {
-        console.error(err);
-        return res.status(500).send('Server error');
-      }
-      res.redirect('/guru/kelas');
-    });
+  
+  // Ambil id_sekolah dari data guru
+  db.get('SELECT id_sekolah FROM guru WHERE id_guru = ?', [req.session.user.id], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    if (!row) {
+      return res.status(404).send('Data guru tidak ditemukan');
+    }
+    
+    const id_sekolah = row.id_sekolah;
+    
+    db.run('INSERT INTO kelas (id_guru, id_sekolah, kelas, minor_kelas, tahun) VALUES (?, ?, ?, ?, ?)',
+      [req.session.user.id, id_sekolah, kelas, minor_kelas, tahun],
+      function(err) {
+        if (err) {
+          console.error(err);
+          return res.status(500).send('Server error');
+        }
+        res.redirect('/guru/kelas');
+      });
+  });
 });
 
 app.get('/guru/kelas/edit/:id', (req, res) => {
