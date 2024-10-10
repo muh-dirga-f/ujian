@@ -31,33 +31,6 @@
     <section class="content">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Detail Sekolah</h3>
-              </div>
-              <div class="card-body">
-                <p><strong>Nama Sekolah:</strong> <%= sekolah.nama_sekolah %></p>
-                <p><strong>NPSN:</strong> <%= sekolah.npsn %></p>
-                <p><strong>Alamat:</strong> <%= sekolah.alamat %></p>
-                <p><strong>Kabupaten/Kota:</strong> <%= sekolah.kab_kota %></p>
-                <p><strong>Provinsi:</strong> <%= sekolah.provinsi %></p>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Informasi Admin</h3>
-              </div>
-              <div class="card-body">
-                <p><strong>Nama:</strong> <%= user.fullname %></p>
-                <p><strong>Username:</strong> <%= user.username %></p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
           <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
               <div class="inner">
@@ -84,6 +57,61 @@
               <a href="/admin_sekolah/siswa" class="small-box-footer">
                 Lihat detail <i class="fas fa-arrow-circle-right"></i>
               </a>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+              <div class="inner">
+                <h3>Kelas</h3>
+                <p>Manajemen Kelas</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-school"></i>
+              </div>
+              <a href="/admin_sekolah/kelas" class="small-box-footer">
+                Lihat detail <i class="fas fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+              <div class="inner">
+                <h3>Mapel</h3>
+                <p>Manajemen Mata Pelajaran</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <a href="/admin_sekolah/mapel" class="small-box-footer">
+                Lihat detail <i class="fas fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Detail Sekolah</h3>
+              </div>
+              <div class="card-body">
+                <p><strong>Nama Sekolah:</strong> <%= sekolah.nama_sekolah %></p>
+                <p><strong>NPSN:</strong> <%= sekolah.npsn %></p>
+                <p><strong>Alamat:</strong> <%= sekolah.alamat %></p>
+                <p><strong>Kabupaten/Kota:</strong> <%= sekolah.kab_kota %></p>
+                <p><strong>Provinsi:</strong> <%= sekolah.provinsi %></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Informasi Admin</h3>
+              </div>
+              <div class="card-body">
+                <p><strong>Nama:</strong> <%= user.fullname %></p>
+                <p><strong>Username:</strong> <%= user.username %></p>
+              </div>
             </div>
           </div>
         </div>
