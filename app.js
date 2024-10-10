@@ -1289,6 +1289,42 @@ app.post('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (
     });
 });
 
+// Route for editing a guru
+app.get('/admin_sekolah/guru/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.get('SELECT * FROM guru WHERE id_guru = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], (err, row) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    if (!row) {
+      return res.status(404).send('Guru tidak ditemukan');
+    }
+    res.render('admin_sekolah/edit_guru', { user: req.session.user, guru: row });
+  });
+});
+
+// Route for processing the edit form
+app.post('/admin_sekolah/guru/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  const { fullname, username, password, nip } = req.body;
+  let query, params;
+  if (password) {
+    query = 'UPDATE guru SET fullname = ?, username = ?, password = ?, nip = ? WHERE id_guru = ? AND id_sekolah = ?';
+    params = [fullname, username, password, nip, id, req.session.user.id_sekolah];
+  } else {
+    query = 'UPDATE guru SET fullname = ?, username = ?, nip = ? WHERE id_guru = ? AND id_sekolah = ?';
+    params = [fullname, username, nip, id, req.session.user.id_sekolah];
+  }
+  db.run(query, params, function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect('/admin_sekolah/guru');
+  });
+});
+
 // Rute untuk menampilkan daftar siswa
 app.get('/admin_sekolah/siswa', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   db.all('SELECT * FROM siswa WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {

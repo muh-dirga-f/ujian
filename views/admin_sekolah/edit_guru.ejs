@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Guru - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Edit Guru</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Form Edit Guru</h3>
+              </div>
+              <div class="card-body">
+                <form action="/admin_sekolah/guru/edit/<%= guru.id_guru %>" method="POST">
+                  <div class="form-group">
+                    <label for="fullname">Nama Lengkap</label>
+                    <input type="text" class="form-control" id="fullname" name="fullname" value="<%= guru.fullname %>" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="<%= guru.username %>" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="password">Password (Kosongkan jika tidak ingin mengubah)</label>
+                    <input type="password" class="form-control" id="password" name="password">
+                  </div>
+                  <div class="form-group">
+                    <label for="nip">NIP</label>
+                    <input type="text" class="form-control" id="nip" name="nip" value="<%= guru.nip %>" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
+    </div>
+  </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+</body>
+</html>
