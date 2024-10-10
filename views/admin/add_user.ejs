@@ -65,8 +65,13 @@
                     <input type="password" class="form-control" id="password" name="password" required>
                   </div>
                   <div class="form-group" id="id_sekolah_group" style="display: none;">
-                    <label for="id_sekolah">ID Sekolah</label>
-                    <input type="number" class="form-control" id="id_sekolah" name="id_sekolah">
+                    <label for="id_sekolah">Sekolah</label>
+                    <select class="form-control" id="id_sekolah" name="id_sekolah">
+                      <option value="">Pilih Sekolah</option>
+                      <% schools.forEach(function(school) { %>
+                        <option value="<%= school.id_sekolah %>"><%= school.nama_sekolah %></option>
+                      <% }); %>
+                    </select>
                   </div>
                   <div class="form-group" id="nip_group" style="display: none;">
                     <label for="nip">NIP</label>
@@ -98,7 +103,7 @@
 <script>
   $(document).ready(function() {
     $('#userType').change(function() {
-      if ($(this).val() === 'guru' || $(this).val() === 'siswa') {
+      if ($(this).val() === 'guru' || $(this).val() === 'siswa' || $(this).val() === 'admin_sekolah') {
         $('#id_sekolah_group').show();
       } else {
         $('#id_sekolah_group').hide();

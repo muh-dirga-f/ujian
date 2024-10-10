@@ -293,7 +293,13 @@ app.get('/admin/users/add', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
-  res.render('admin/add_user', { user: req.session.user });
+  db.all('SELECT id_sekolah, nama_sekolah FROM sekolah', [], (err, schools) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin/add_user', { user: req.session.user, schools: schools });
+  });
 });
 
 app.post('/admin/users/add', (req, res) => {
