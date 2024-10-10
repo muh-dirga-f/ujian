@@ -427,6 +427,9 @@ app.get('/admin/users/delete/:id/:type', (req, res) => {
     case 'admin':
       query = 'DELETE FROM admin WHERE id_admin = ?';
       break;
+    case 'admin_sekolah':
+      query = 'DELETE FROM admin_sekolah WHERE id_admin_sekolah = ?';
+      break;
     default:
       return res.status(400).send('Invalid user type');
   }
@@ -437,6 +440,31 @@ app.get('/admin/users/delete/:id/:type', (req, res) => {
     }
     res.redirect('/admin/users');
   });
+});
+
+// Rute untuk menampilkan form tambah admin sekolah
+app.get('/admin/add_admin_sekolah', checkAuth, checkUserType('admin'), (req, res) => {
+  db.all('SELECT id_sekolah, nama_sekolah FROM sekolah', [], (err, schools) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin/add_admin_sekolah', { user: req.session.user, schools: schools });
+  });
+});
+
+// Rute untuk memproses penambahan admin sekolah
+app.post('/admin/add_admin_sekolah', checkAuth, checkUserType('admin'), (req, res) => {
+  const { fullname, username, password, id_sekolah } = req.body;
+  db.run('INSERT INTO admin_sekolah (fullname, username, password, id_sekolah) VALUES (?, ?, ?, ?)',
+    [fullname, username, password, id_sekolah],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/admin/users');
+    });
 });
 
 // Rute untuk manajemen sekolah
