@@ -46,6 +46,7 @@
                   <thead>
                     <tr>
                       <th>Nama Mata Pelajaran</th>
+                      <th>Guru Pengajar</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -53,6 +54,7 @@
                     <% mapel.forEach(function(m) { %>
                       <tr>
                         <td><%= m.nama_mapel %></td>
+                        <td><%= m.nama_guru || 'Belum ditentukan' %></td>
                         <td>
                           <a href="/admin_sekolah/kelas/<%= id_kelas %>/mapel/edit/<%= m.id_mapel %>" class="btn btn-info btn-sm">
                             <i class="fas fa-edit"></i> Edit

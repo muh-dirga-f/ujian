@@ -1627,12 +1627,84 @@ app.get('/admin_sekolah/kelas/delete/:id', checkAuth, checkUserType('admin_sekol
 // Rute untuk melihat daftar mata pelajaran dalam kelas
 app.get('/admin_sekolah/kelas/:id/mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  db.all('SELECT * FROM mata_pelajaran WHERE id_kelas = ?', [id], (err, mapel) => {
+  db.all(`
+    SELECT m.*, g.fullname AS nama_guru
+    FROM mata_pelajaran m
+    LEFT JOIN guru g ON m.id_guru = g.id_guru
+    WHERE m.id_kelas = ?
+  `, [id], (err, mapel) => {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
     }
     res.render('admin_sekolah/mapel', { user: req.session.user, mapel: mapel, id_kelas: id });
+  });
+});
+
+app.get('/admin_sekolah/kelas/:id/mapel/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  db.all('SELECT id_guru, fullname FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, guru) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.render('admin_sekolah/add_mapel', { user: req.session.user, id_kelas: id, guru: guru });
+  });
+});
+
+app.post('/admin_sekolah/kelas/:id/mapel/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id } = req.params;
+  const { nama_mapel, id_guru } = req.body;
+  db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel, id_guru) VALUES (?, ?, ?)',
+    [id, nama_mapel, id_guru],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect(`/admin_sekolah/kelas/${id}/mapel`);
+    });
+});
+
+app.get('/admin_sekolah/kelas/:id_kelas/mapel/edit/:id_mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id_kelas, id_mapel } = req.params;
+  db.get('SELECT * FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], (err, mapel) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    db.all('SELECT id_guru, fullname FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, guru) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.render('admin_sekolah/edit_mapel', { user: req.session.user, mapel: mapel, id_kelas, guru: guru });
+    });
+  });
+});
+
+app.post('/admin_sekolah/kelas/:id_kelas/mapel/edit/:id_mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id_kelas, id_mapel } = req.params;
+  const { nama_mapel, id_guru } = req.body;
+  db.run('UPDATE mata_pelajaran SET nama_mapel = ?, id_guru = ? WHERE id_mapel = ? AND id_kelas = ?',
+    [nama_mapel, id_guru, id_mapel, id_kelas],
+    function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect(`/admin_sekolah/kelas/${id_kelas}/mapel`);
+    });
+});
+
+app.get('/admin_sekolah/kelas/:id_kelas/mapel/delete/:id_mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
+  const { id_kelas, id_mapel } = req.params;
+  db.run('DELETE FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], function(err) {
+    if (err) {
+      console.error(err);
+      return res.status(500).send('Server error');
+    }
+    res.redirect(`/admin_sekolah/kelas/${id_kelas}/mapel`);
   });
 });
 
