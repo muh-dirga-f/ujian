@@ -760,7 +760,7 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
       JOIN siswa s ON js.nis = s.nis
       LEFT JOIN nilai_ujian n ON n.id_ujian = js.id_ujian AND n.nis = js.nis
       WHERE js.id_ujian = ?
-      GROUP BY s.nis
+      GROUP BY s.nis, n.nilai_total, n.status
     `, [id], (err, jawaban) => {
       if (err) {
         console.error(err);

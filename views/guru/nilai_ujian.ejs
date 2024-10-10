@@ -84,7 +84,7 @@
                         <td><%= siswa.nis %></td>
                         <td><%= siswa.fullname %></td>
                         <td><%= siswa.count %></td>
-                        <td><%= siswa.nilai_total !== null ? siswa.nilai_total : 'Belum dinilai' %></td>
+                        <td><%= siswa.nilai_total !== null && siswa.nilai_total !== undefined ? siswa.nilai_total : 'Belum dinilai' %></td>
                         <td>
                           <% if (siswa.status === 'sudah_dinilai') { %>
                             <span class="badge badge-success">Sudah Dinilai</span>
