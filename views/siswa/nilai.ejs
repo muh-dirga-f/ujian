@@ -43,8 +43,8 @@
                         <th>Judul Ujian</th>
                         <th>Mata Pelajaran</th>
                         <th>Kelas</th>
+                        <th>Tanggal Ujian</th>
                         <th>Nilai</th>
-                        <th>Status</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -53,16 +53,8 @@
                           <td><%= nilai.judul_ujian %></td>
                           <td><%= nilai.nama_mapel %></td>
                           <td><%= nilai.kelas %> <%= nilai.minor_kelas %></td>
+                          <td><%= new Date(nilai.waktu_mulai).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></td>
                           <td><%= nilai.nilai_total %></td>
-                          <td>
-                            <% if (nilai.status === 'lulus') { %>
-                              <span class="badge badge-success">Lulus</span>
-                            <% } else if (nilai.status === 'tidak_lulus') { %>
-                              <span class="badge badge-danger">Tidak Lulus</span>
-                            <% } else { %>
-                              <span class="badge badge-warning">Belum Dinilai</span>
-                            <% } %>
-                          </td>
                         </tr>
                       <% }); %>
                     </tbody>

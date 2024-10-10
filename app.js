@@ -1202,7 +1202,7 @@ app.get('/siswa/nilai', (req, res) => {
   }
   
   db.all(`
-    SELECT u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas, nu.nilai_total, nu.status
+    SELECT u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas, nu.nilai_total, nu.status, u.waktu_mulai
     FROM nilai_ujian nu
     JOIN ujian u ON nu.id_ujian = u.id_ujian
     JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
