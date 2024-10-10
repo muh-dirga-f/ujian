@@ -436,7 +436,7 @@ app.get('/admin/users/delete/:id/:type', (req, res) => {
 });
 
 // Rute untuk manajemen sekolah
-app.get('/admin/schools', (req, res) => {
+app.get('/admin/sekolah', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
@@ -445,18 +445,18 @@ app.get('/admin/schools', (req, res) => {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    res.render('admin/schools', { schools: rows, user: req.session.user });
+    res.render('admin/sekolah', { sekolah: rows, user: req.session.user });
   });
 });
 
-app.get('/admin/schools/add', (req, res) => {
+app.get('/admin/sekolah/add', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
   res.render('admin/add_school', { user: req.session.user });
 });
 
-app.post('/admin/schools/add', (req, res) => {
+app.post('/admin/sekolah/add', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
@@ -468,11 +468,11 @@ app.post('/admin/schools/add', (req, res) => {
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.redirect('/admin/schools');
+      res.redirect('/admin/sekolah');
     });
 });
 
-app.get('/admin/schools/edit/:id', (req, res) => {
+app.get('/admin/sekolah/edit/:id', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
@@ -486,7 +486,7 @@ app.get('/admin/schools/edit/:id', (req, res) => {
   });
 });
 
-app.post('/admin/schools/edit/:id', (req, res) => {
+app.post('/admin/sekolah/edit/:id', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
@@ -499,11 +499,11 @@ app.post('/admin/schools/edit/:id', (req, res) => {
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.redirect('/admin/schools');
+      res.redirect('/admin/sekolah');
     });
 });
 
-app.get('/admin/schools/delete/:id', (req, res) => {
+app.get('/admin/sekolah/delete/:id', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'admin') {
     return res.redirect('/');
   }
@@ -513,7 +513,7 @@ app.get('/admin/schools/delete/:id', (req, res) => {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    res.redirect('/admin/schools');
+    res.redirect('/admin/sekolah');
   });
 });
 
@@ -1418,16 +1418,6 @@ app.post('/siswa/update-kelas', (req, res) => {
   });
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Error destroying session:', err);
-    }
-    res.clearCookie('connect.sid');
-    res.redirect('/');
-  });
-});
-
 // Rute untuk menampilkan daftar guru
 app.get('/admin_sekolah/guru', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   db.all('SELECT * FROM guru WHERE id_sekolah = ?', [req.session.user.id_sekolah], (err, rows) => {
@@ -1484,6 +1474,16 @@ app.post('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), 
       }
       res.redirect('/admin_sekolah/siswa');
     });
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error destroying session:', err);
+    }
+    res.clearCookie('connect.sid');
+    res.redirect('/');
+  });
 });
 
 app.listen(port, () => {

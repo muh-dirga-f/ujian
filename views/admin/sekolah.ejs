@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manajemen Sekolah - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+</head>
+<body class="hold-transition sidebar-mini">
+<div class="wrapper">
+
+  <%- include('partials/navigation') %>
+
+  <div class="content-wrapper">
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Manajemen Sekolah</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Daftar Sekolah</h3>
+                <div class="card-tools">
+                  <a href="/admin/sekolah/add" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Tambah Sekolah
+                  </a>
+                </div>
+              </div>
+              <div class="card-body table-responsive p-0">
+                <table class="table table-hover text-nowrap">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>NPSN</th>
+                      <th>Nama Sekolah</th>
+                      <th>Alamat</th>
+                      <th>Kabupaten/Kota</th>
+                      <th>Provinsi</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% sekolah.forEach(function(school) { %>
+                      <tr>
+                        <td><%= school.id_sekolah %></td>
+                        <td><%= school.npsn %></td>
+                        <td><%= school.nama_sekolah %></td>
+                        <td><%= school.alamat %></td>
+                        <td><%= school.kab_kota %></td>
+                        <td><%= school.provinsi %></td>
+                        <td>
+                          <a href="/admin/sekolah/edit/<%= school.id_sekolah %>" class="btn btn-info btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                          </a>
+                          <a href="/admin/sekolah/delete/<%= school.id_sekolah %>" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus sekolah ini?');">
+                            <i class="fas fa-trash"></i> Hapus
+                          </a>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-inline">
+      Sistem Ujian Sekolah
+    </div>
+  </footer>
+</div>
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+</body>
+</html>
