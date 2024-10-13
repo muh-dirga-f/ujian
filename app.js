@@ -151,7 +151,7 @@ app.use(session({
   secret: crypto.randomBytes(32).toString('hex'),
   resave: false,
   saveUninitialized: true,
-  cookie: { 
+  cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -212,9 +212,9 @@ app.post('/login', (req, res) => {
     }
 
     if (password === row.password) {
-      req.session.user = { 
-        id: row.id_guru || row.id_admin || row.id_admin_sekolah || row.id_siswa, 
-        username: row.username || row.nis, 
+      req.session.user = {
+        id: row.id_guru || row.id_admin || row.id_admin_sekolah || row.id_siswa,
+        username: row.username || row.nis,
         fullname: row.fullname,
         type: userType,
         id_sekolah: row.id_sekolah
@@ -229,10 +229,10 @@ app.post('/login', (req, res) => {
 
 app.post('/register', (req, res) => {
   const { fullname, nis, password, id_sekolah } = req.body;
-  
+
   db.run('INSERT INTO siswa (fullname, nis, password, id_sekolah) VALUES (?, ?, ?, ?)',
     [fullname, nis, password, id_sekolah],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -343,7 +343,7 @@ app.post('/admin/users/add', (req, res) => {
       return res.status(400).send('Invalid user type');
   }
 
-  db.run(query, params, function(err) {
+  db.run(query, params, function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -427,7 +427,7 @@ app.post('/admin/users/edit/:id/:type', (req, res) => {
       return res.status(400).send('Invalid user type');
   }
 
-  db.run(query, params, function(err) {
+  db.run(query, params, function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -458,7 +458,7 @@ app.get('/admin/users/delete/:id/:type', (req, res) => {
     default:
       return res.status(400).send('Invalid user type');
   }
-  db.run(query, [id], function(err) {
+  db.run(query, [id], function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -495,7 +495,7 @@ app.post('/admin/sekolah/add', (req, res) => {
   const { npsn, nama_sekolah, alamat, kab_kota, provinsi } = req.body;
   db.run('INSERT INTO sekolah (npsn, nama_sekolah, alamat, kab_kota, provinsi) VALUES (?, ?, ?, ?, ?)',
     [npsn, nama_sekolah, alamat, kab_kota, provinsi],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -526,7 +526,7 @@ app.post('/admin/sekolah/edit/:id', (req, res) => {
   const { npsn, nama_sekolah, alamat, kab_kota, provinsi } = req.body;
   db.run('UPDATE sekolah SET npsn = ?, nama_sekolah = ?, alamat = ?, kab_kota = ?, provinsi = ? WHERE id_sekolah = ?',
     [npsn, nama_sekolah, alamat, kab_kota, provinsi, id],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -540,7 +540,7 @@ app.get('/admin/sekolah/delete/:id', (req, res) => {
     return res.redirect('/');
   }
   const { id } = req.params;
-  db.run('DELETE FROM sekolah WHERE id_sekolah = ?', [id], function(err) {
+  db.run('DELETE FROM sekolah WHERE id_sekolah = ?', [id], function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -550,14 +550,14 @@ app.get('/admin/sekolah/delete/:id', (req, res) => {
 });
 
 app.get('/guru/dashboard', checkAuth, checkUserType('guru'), (req, res) => {
-  db.get('SELECT g.*, s.nama_sekolah FROM guru g JOIN sekolah s ON g.id_sekolah = s.id_sekolah WHERE g.id_guru = ?', 
-    [req.session.user.id], 
+  db.get('SELECT g.*, s.nama_sekolah FROM guru g JOIN sekolah s ON g.id_sekolah = s.id_sekolah WHERE g.id_guru = ?',
+    [req.session.user.id],
     (err, row) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.render('guru/dashboard', { user: {...req.session.user, ...row} });
+      res.render('guru/dashboard', { user: { ...req.session.user, ...row } });
     }
   );
 });
@@ -626,12 +626,12 @@ app.post('/guru/ujian/:id/soal/add', (req, res) => {
   const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
   db.run('INSERT INTO soal (id_ujian, jenis_soal, soal, kunci_jawaban, pilihan_ganda) VALUES (?, ?, ?, ?, ?)',
     [id, jenis_soal, soal, kunci, pilihan_ganda_json], (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.redirect(`/guru/ujian/${id}/soal`);
-  });
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect(`/guru/ujian/${id}/soal`);
+    });
 });
 
 // Rute untuk menampilkan form edit soal
@@ -666,12 +666,12 @@ app.post('/guru/ujian/:id_ujian/soal/edit/:id_soal', (req, res) => {
   const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
   db.run('UPDATE soal SET jenis_soal = ?, soal = ?, kunci_jawaban = ?, pilihan_ganda = ? WHERE id_soal = ? AND id_ujian = ?',
     [jenis_soal, soal, kunci, pilihan_ganda_json, id_soal, id_ujian], (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.redirect(`/guru/ujian/${id_ujian}/soal`);
-  });
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect(`/guru/ujian/${id_ujian}/soal`);
+    });
 });
 
 // Rute untuk menghapus soal
@@ -716,12 +716,12 @@ app.post('/guru/ujian/add', (req, res) => {
   const [kelas_id, mapel_id] = id_kelas.split('|');
   db.run('INSERT INTO ujian (id_kelas, id_mapel, judul_ujian, waktu_mulai, waktu_selesai) VALUES (?, ?, ?, ?, ?)',
     [kelas_id, mapel_id, judul_ujian, waktu_mulai, waktu_selesai], (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.redirect('/guru/ujian');
-  });
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/guru/ujian');
+    });
 });
 
 app.get('/guru/ujian/edit/:id', (req, res) => {
@@ -738,7 +738,7 @@ app.get('/guru/ujian/edit/:id', (req, res) => {
       SELECT k.id_kelas, k.kelas, k.minor_kelas, m.id_mapel, m.nama_mapel
       FROM kelas k
       JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
-      WHERE k.id_guru = ?
+      WHERE m.id_guru = ?
     `, [req.session.user.id], (err, rows) => {
       if (err) {
         console.error(err);
@@ -758,12 +758,12 @@ app.post('/guru/ujian/edit/:id', (req, res) => {
   const [kelas_id, mapel_id] = id_kelas.split('|');
   db.run('UPDATE ujian SET id_kelas = ?, id_mapel = ?, judul_ujian = ?, waktu_mulai = ?, waktu_selesai = ? WHERE id_ujian = ?',
     [kelas_id, mapel_id, judul_ujian, waktu_mulai, waktu_selesai, id], (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.redirect('/guru/ujian');
-  });
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/guru/ujian');
+    });
 });
 
 app.get('/guru/ujian/delete/:id', (req, res) => {
@@ -785,7 +785,7 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
     return res.redirect('/');
   }
   const { id } = req.params;
-  
+
   // Fetch exam details and teacher's school
   db.get(`
     SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas, g.id_sekolah
@@ -799,11 +799,11 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    
+
     if (!ujian) {
       return res.status(404).send('Ujian tidak ditemukan');
     }
-    
+
     // Fetch student scores and answers count
     db.all(`
       SELECT s.nis, s.fullname, n.nilai_total, n.status,
@@ -819,7 +819,7 @@ app.get('/guru/ujian/:id/nilai', (req, res) => {
         console.error(err);
         return res.status(500).send('Server error');
       }
-      
+
       res.render('guru/nilai_ujian', { user: req.session.user, ujian: ujian, jawaban: jawaban });
     });
   });
@@ -879,12 +879,12 @@ app.get('/guru/ujian/:id_ujian/nilai/:nis', (req, res) => {
             jawabanObj[j.id_soal] = j.jawaban;
           });
 
-          res.render('guru/nilai_siswa', { 
-            user: req.session.user, 
-            ujian: ujian, 
-            siswa: siswa, 
-            soal: soal, 
-            jawaban: jawabanObj 
+          res.render('guru/nilai_siswa', {
+            user: req.session.user,
+            ujian: ujian,
+            siswa: siswa,
+            soal: soal,
+            jawaban: jawabanObj
           });
         });
       });
@@ -967,14 +967,14 @@ app.post('/guru/ujian/edit/:id_kelas/:id_mapel', (req, res) => {
   }
   const { id_kelas, id_mapel } = req.params;
   const { nama_mapel, new_id_kelas } = req.body;
-  db.run('UPDATE mata_pelajaran SET nama_mapel = ?, id_kelas = ? WHERE id_mapel = ? AND id_kelas = ?', 
+  db.run('UPDATE mata_pelajaran SET nama_mapel = ?, id_kelas = ? WHERE id_mapel = ? AND id_kelas = ?',
     [nama_mapel, new_id_kelas, id_mapel, id_kelas], (err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('Server error');
-    }
-    res.redirect('/guru/ujian');
-  });
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Server error');
+      }
+      res.redirect('/guru/ujian');
+    });
 });
 
 app.get('/guru/ujian/delete/:id_kelas/:id_mapel', (req, res) => {
@@ -1015,7 +1015,7 @@ app.get('/siswa/jadwal-ujian', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
   }
-  
+
   db.all(`
     SELECT u.id_ujian, u.judul_ujian, u.waktu_mulai, u.waktu_selesai, 
            k.kelas, k.minor_kelas, m.nama_mapel
@@ -1038,7 +1038,7 @@ app.get('/siswa/nilai', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
   }
-  
+
   db.all(`
     SELECT u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas, nu.nilai_total, nu.status, u.waktu_mulai
     FROM nilai_ujian nu
@@ -1060,9 +1060,9 @@ app.get('/siswa/ujian/:id', (req, res) => {
   if (!req.session.user || req.session.user.type !== 'siswa') {
     return res.redirect('/');
   }
-  
+
   const ujianId = req.params.id;
-  
+
   // Periksa apakah ujian ada dan siswa berhak mengaksesnya
   db.get(`
     SELECT u.*, m.nama_mapel, k.kelas, k.minor_kelas
@@ -1076,43 +1076,43 @@ app.get('/siswa/ujian/:id', (req, res) => {
       console.error(err);
       return res.status(500).send('Server error');
     }
-    
+
     if (!ujian) {
       return res.status(404).send('Ujian tidak ditemukan atau Anda tidak memiliki akses');
     }
-    
+
     const now = new Date();
     const waktuMulai = new Date(ujian.waktu_mulai);
     const waktuSelesai = new Date(ujian.waktu_selesai);
-    
+
     if (now < waktuMulai) {
       return res.status(403).send('Ujian belum dimulai');
     }
-    
+
     if (now > waktuSelesai) {
       return res.status(403).send('Ujian sudah berakhir');
     }
-    
+
     // Ambil soal-soal ujian
     db.all('SELECT * FROM soal WHERE id_ujian = ?', [ujianId], (err, soal) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
       }
-      
+
       // Ambil jawaban siswa yang sudah ada (jika ada)
       db.all('SELECT * FROM jawaban_siswa WHERE id_ujian = ? AND nis = ?', [ujianId, req.session.user.username], (err, jawaban) => {
         if (err) {
           console.error(err);
           return res.status(500).send('Server error');
         }
-        
+
         // Konversi jawaban menjadi objek untuk memudahkan akses
         const jawabanObj = {};
         jawaban.forEach(j => {
           jawabanObj[j.id_soal] = j.jawaban;
         });
-        
+
         res.render('siswa/ujian', { user: req.session.user, ujian: ujian, soal: soal, jawaban: jawabanObj });
       });
     });
@@ -1172,8 +1172,8 @@ app.get('/siswa/ujian/:id/status', (req, res) => {
 
   const ujianId = req.params.id;
 
-  db.get('SELECT status FROM ujian_siswa WHERE id_ujian = ? AND nis = ?', 
-    [ujianId, req.session.user.username], 
+  db.get('SELECT status FROM ujian_siswa WHERE id_ujian = ? AND nis = ?',
+    [ujianId, req.session.user.username],
     (err, row) => {
       if (err) {
         console.error(err);
@@ -1202,7 +1202,7 @@ app.post('/siswa/update-kelas', (req, res) => {
       // Jika data sudah ada, lakukan update
       db.run('UPDATE kelas_siswa SET kelas = ?, kelas_minor = ?, tahun = ? WHERE nis = ?',
         [kelas, kelas_minor, tahun, nis],
-        function(err) {
+        function (err) {
           if (err) {
             console.error(err);
             return res.status(500).send('Server error');
@@ -1213,7 +1213,7 @@ app.post('/siswa/update-kelas', (req, res) => {
       // Jika data belum ada, tambahkan baru
       db.run('INSERT INTO kelas_siswa (nis, kelas, kelas_minor, tahun) VALUES (?, ?, ?, ?)',
         [nis, kelas, kelas_minor, tahun],
-        function(err) {
+        function (err) {
           if (err) {
             console.error(err);
             return res.status(500).send('Server error');
@@ -1244,7 +1244,7 @@ app.post('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (
   const { fullname, username, password, nip } = req.body;
   db.run('INSERT INTO guru (fullname, username, password, id_sekolah, nip) VALUES (?, ?, ?, ?, ?)',
     [fullname, username, password, req.session.user.id_sekolah, nip],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -1280,7 +1280,7 @@ app.post('/admin_sekolah/guru/edit/:id', checkAuth, checkUserType('admin_sekolah
     query = 'UPDATE guru SET fullname = ?, username = ?, nip = ? WHERE id_guru = ? AND id_sekolah = ?';
     params = [fullname, username, nip, id, req.session.user.id_sekolah];
   }
-  db.run(query, params, function(err) {
+  db.run(query, params, function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1309,7 +1309,7 @@ app.post('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), 
   const { fullname, nis, password } = req.body;
   db.run('INSERT INTO siswa (fullname, nis, password, id_sekolah) VALUES (?, ?, ?, ?)',
     [fullname, nis, password, req.session.user.id_sekolah],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -1344,7 +1344,7 @@ app.post('/admin_sekolah/siswa/edit/:id', checkAuth, checkUserType('admin_sekola
     query = 'UPDATE siswa SET fullname = ?, nis = ? WHERE id_siswa = ? AND id_sekolah = ?';
     params = [fullname, nis, id, req.session.user.id_sekolah];
   }
-  db.run(query, params, function(err) {
+  db.run(query, params, function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1356,7 +1356,7 @@ app.post('/admin_sekolah/siswa/edit/:id', checkAuth, checkUserType('admin_sekola
 // Rute untuk menghapus siswa
 app.get('/admin_sekolah/siswa/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  db.run('DELETE FROM siswa WHERE id_siswa = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function(err) {
+  db.run('DELETE FROM siswa WHERE id_siswa = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1381,15 +1381,16 @@ app.get('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (
 });
 
 app.post('/admin_sekolah/kelas/add', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
-  const { kelas, minor_kelas, tahun, id_guru } = req.body;
+  const { kelas, minor_kelas, tahun } = req.body;
   db.run('INSERT INTO kelas (kelas, minor_kelas, tahun, id_sekolah) VALUES (?, ?, ?, ?)',
     [kelas, minor_kelas, tahun, req.session.user.id_sekolah],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
       }
     });
+  res.redirect('/admin_sekolah/kelas');
 });
 
 app.get('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
@@ -1408,17 +1409,18 @@ app.post('/admin_sekolah/kelas/edit/:id', checkAuth, checkUserType('admin_sekola
   const { kelas, minor_kelas, tahun, id_guru } = req.body;
   db.run('UPDATE kelas SET kelas = ?, minor_kelas = ?, tahun = ? WHERE id_kelas = ? AND id_sekolah = ?',
     [kelas, minor_kelas, tahun, id, req.session.user.id_sekolah],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
       }
     });
+  res.redirect('/admin_sekolah/kelas');
 });
 
 app.get('/admin_sekolah/kelas/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  db.run('DELETE FROM kelas WHERE id_kelas = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function(err) {
+  db.run('DELETE FROM kelas WHERE id_kelas = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1448,9 +1450,9 @@ app.get('/admin_sekolah/kelas/:id/mapel', checkAuth, checkUserType('admin_sekola
         console.error(err);
         return res.status(500).send('Server error');
       }
-      res.render('admin_sekolah/mapel', { 
-        user: req.session.user, 
-        mapel: mapel, 
+      res.render('admin_sekolah/mapel', {
+        user: req.session.user,
+        mapel: mapel,
         id_kelas: id,
         kelas: kelas.kelas,
         minor_kelas: kelas.minor_kelas
@@ -1475,7 +1477,7 @@ app.post('/admin_sekolah/kelas/:id/mapel/add', checkAuth, checkUserType('admin_s
   const { nama_mapel, id_guru } = req.body;
   db.run('INSERT INTO mata_pelajaran (id_kelas, nama_mapel, id_guru) VALUES (?, ?, ?)',
     [id, nama_mapel, id_guru],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -1506,7 +1508,7 @@ app.post('/admin_sekolah/kelas/:id_kelas/mapel/edit/:id_mapel', checkAuth, check
   const { nama_mapel, id_guru } = req.body;
   db.run('UPDATE mata_pelajaran SET nama_mapel = ?, id_guru = ? WHERE id_mapel = ? AND id_kelas = ?',
     [nama_mapel, id_guru, id_mapel, id_kelas],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -1517,7 +1519,7 @@ app.post('/admin_sekolah/kelas/:id_kelas/mapel/edit/:id_mapel', checkAuth, check
 
 app.get('/admin_sekolah/kelas/:id_kelas/mapel/delete/:id_mapel', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id_kelas, id_mapel } = req.params;
-  db.run('DELETE FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], function(err) {
+  db.run('DELETE FROM mata_pelajaran WHERE id_mapel = ? AND id_kelas = ?', [id_mapel, id_kelas], function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1529,7 +1531,7 @@ app.get('/admin_sekolah/kelas/:id_kelas/mapel/delete/:id_mapel', checkAuth, chec
 // Rute untuk menghapus guru
 app.get('/admin_sekolah/guru/delete/:id', checkAuth, checkUserType('admin_sekolah'), (req, res) => {
   const { id } = req.params;
-  db.run('DELETE FROM guru WHERE id_guru = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function(err) {
+  db.run('DELETE FROM guru WHERE id_guru = ? AND id_sekolah = ?', [id, req.session.user.id_sekolah], function (err) {
     if (err) {
       console.error(err);
       return res.status(500).send('Server error');
@@ -1558,7 +1560,7 @@ app.post('/admin_sekolah/guru/add', checkAuth, checkUserType('admin_sekolah'), (
   const { fullname, username, password, nip } = req.body;
   db.run('INSERT INTO guru (fullname, username, password, id_sekolah, nip) VALUES (?, ?, ?, ?, ?)',
     [fullname, username, password, req.session.user.id_sekolah, nip],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -1587,7 +1589,7 @@ app.post('/admin_sekolah/siswa/add', checkAuth, checkUserType('admin_sekolah'), 
   const { fullname, nis, password } = req.body;
   db.run('INSERT INTO siswa (fullname, nis, password, id_sekolah) VALUES (?, ?, ?, ?)',
     [fullname, nis, password, req.session.user.id_sekolah],
-    function(err) {
+    function (err) {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
