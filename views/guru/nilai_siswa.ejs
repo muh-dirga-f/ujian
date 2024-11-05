@@ -125,5 +125,18 @@
     return 0;
   }
 </script>
+<script>
+  function calculateScore(soal, jawabanSiswa) {
+    if (soal.jenis_soal === 'pilihan_ganda') {
+      return soal.kunci_jawaban === jawabanSiswa ? soal.nilai : 0;
+    } else if (soal.jenis_soal === 'essay') {
+      const kataKunci = soal.kunci_jawaban.split(',').map(k => k.trim().toLowerCase());
+      const jawabanKata = jawabanSiswa ? jawabanSiswa.toLowerCase().split(' ') : [];
+      const matchedKata = kataKunci.filter(k => jawabanKata.includes(k));
+      return Math.round((matchedKata.length / kataKunci.length) * soal.nilai);
+    }
+    return 0;
+  }
+</script>
 </body>
 </html>
