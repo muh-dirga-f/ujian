@@ -880,12 +880,27 @@ app.get('/guru/ujian/:id_ujian/nilai/:nis', (req, res) => {
             jawabanObj[j.id_soal] = j.jawaban;
           });
 
+          // Calculate scores
+          const scores = soal.map(s => {
+            const jawabanSiswa = jawabanObj[s.id_soal] || '';
+            if (s.jenis_soal === 'pilihan_ganda') {
+              return s.kunci_jawaban === jawabanSiswa ? s.nilai : 0;
+            } else if (s.jenis_soal === 'essay') {
+              const kataKunci = s.kunci_jawaban.split(',').map(k => k.trim().toLowerCase());
+              const jawabanKata = jawabanSiswa.toLowerCase().split(' ');
+              const matchedKata = kataKunci.filter(k => jawabanKata.includes(k));
+              return Math.round((matchedKata.length / kataKunci.length) * s.nilai);
+            }
+            return 0;
+          });
+
           res.render('guru/nilai_siswa', {
             user: req.session.user,
             ujian: ujian,
             siswa: siswa,
             soal: soal,
-            jawaban: jawabanObj
+            jawaban: jawabanObj,
+            scores: scores
           });
         });
       });

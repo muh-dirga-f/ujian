@@ -79,7 +79,7 @@
                       <p><strong>Kunci Jawaban:</strong> <%= s.kunci_jawaban %></p>
                       <p><strong>Jawaban Siswa:</strong> <%= jawaban[s.id_soal] || 'Tidak dijawab' %></p>
                       <label for="nilai_<%= s.id_soal %>">Nilai:</label>
-                      <input type="number" class="form-control" id="nilai_<%= s.id_soal %>" name="nilai[<%= s.id_soal %>]" min="0" max="100" required value="<%= calculateScore(s, jawaban[s.id_soal]) %>">
+                      <input type="number" class="form-control" id="nilai_<%= s.id_soal %>" name="nilai[<%= s.id_soal %>]" min="0" max="100" required value="<%= scores[index] %>">
                     </div>
                   <% }); %>
                   <div class="form-group">
@@ -112,18 +112,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
-<script>
-  function calculateScore(soal, jawabanSiswa) {
-    if (soal.jenis_soal === 'pilihan_ganda') {
-      return soal.kunci_jawaban === jawabanSiswa ? soal.nilai : 0;
-    } else if (soal.jenis_soal === 'essay') {
-      const kataKunci = soal.kunci_jawaban.split(',').map(k => k.trim().toLowerCase());
-      const jawabanKata = jawabanSiswa ? jawabanSiswa.toLowerCase().split(' ') : [];
-      const matchedKata = kataKunci.filter(k => jawabanKata.includes(k));
-      return Math.round((matchedKata.length / kataKunci.length) * soal.nilai);
-    }
-    return 0;
-  }
-</script>
 </body>
 </html>
