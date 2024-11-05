@@ -81,6 +81,10 @@
                     <label for="kata_kunci">Kata Kunci Jawaban</label>
                     <input type="text" class="form-control" id="kata_kunci" name="kata_kunci" value="<%= soal.kata_kunci || '' %>" placeholder="Masukkan kata kunci jawaban, pisahkan dengan koma jika lebih dari satu">
                   </div>
+                  <div class="form-group">
+                    <label for="nilai">Nilai</label>
+                    <input type="number" class="form-control" id="nilai" name="nilai" value="<%= soal.nilai %>" min="0" required>
+                  </div>
                   <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
                 </form>
               </div>

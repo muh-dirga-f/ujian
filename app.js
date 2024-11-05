@@ -96,6 +96,7 @@ const db = new sqlite3.Database('./ujian_sekolah.db', (err) => {
       soal TEXT,
       pilihan_ganda TEXT,
       kunci_jawaban TEXT,
+      nilai INTEGER,
       FOREIGN KEY (id_ujian) REFERENCES ujian(id_ujian)
     )`);
 
@@ -612,7 +613,7 @@ app.post('/guru/ujian/:id/soal/add', (req, res) => {
     return res.redirect('/');
   }
   const { id } = req.params;
-  const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda } = req.body;
+  const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda, nilai } = req.body;
   let pilihan_ganda_json = null;
   if (jenis_soal === 'pilihan_ganda') {
     // Pastikan pilihan_ganda adalah objek sebelum di-stringify
@@ -624,8 +625,8 @@ app.post('/guru/ujian/:id/soal/add', (req, res) => {
     }
   }
   const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
-  db.run('INSERT INTO soal (id_ujian, jenis_soal, soal, kunci_jawaban, pilihan_ganda) VALUES (?, ?, ?, ?, ?)',
-    [id, jenis_soal, soal, kunci, pilihan_ganda_json], (err) => {
+  db.run('INSERT INTO soal (id_ujian, jenis_soal, soal, kunci_jawaban, pilihan_ganda, nilai) VALUES (?, ?, ?, ?, ?, ?)',
+    [id, jenis_soal, soal, kunci, pilihan_ganda_json, nilai], (err) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
@@ -658,14 +659,14 @@ app.post('/guru/ujian/:id_ujian/soal/edit/:id_soal', (req, res) => {
     return res.redirect('/');
   }
   const { id_ujian, id_soal } = req.params;
-  const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda } = req.body;
+  const { jenis_soal, soal, kunci_jawaban, kata_kunci, pilihan_ganda, nilai } = req.body;
   let pilihan_ganda_json = null;
   if (jenis_soal === 'pilihan_ganda') {
     pilihan_ganda_json = JSON.stringify(pilihan_ganda);
   }
   const kunci = jenis_soal === 'pilihan_ganda' ? kunci_jawaban : kata_kunci;
-  db.run('UPDATE soal SET jenis_soal = ?, soal = ?, kunci_jawaban = ?, pilihan_ganda = ? WHERE id_soal = ? AND id_ujian = ?',
-    [jenis_soal, soal, kunci, pilihan_ganda_json, id_soal, id_ujian], (err) => {
+  db.run('UPDATE soal SET jenis_soal = ?, soal = ?, kunci_jawaban = ?, pilihan_ganda = ?, nilai = ? WHERE id_soal = ? AND id_ujian = ?',
+    [jenis_soal, soal, kunci, pilihan_ganda_json, nilai, id_soal, id_ujian], (err) => {
       if (err) {
         console.error(err);
         return res.status(500).send('Server error');
