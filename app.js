@@ -1109,6 +1109,15 @@ app.get('/siswa/ujian/:id', (req, res) => {
       return res.status(403).send('Ujian sudah berakhir');
     }
 
+    // Fungsi untuk mengacak array menggunakan Fisher-Yates Shuffle
+    function fisherYatesShuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
     // Ambil soal-soal ujian
     db.all('SELECT * FROM soal WHERE id_ujian = ?', [ujianId], (err, soal) => {
       if (err) {
@@ -1128,6 +1137,23 @@ app.get('/siswa/ujian/:id', (req, res) => {
         jawaban.forEach(j => {
           jawabanObj[j.id_soal] = j.jawaban;
         });
+
+        // Gunakan urutan soal yang tersimpan di session jika ada
+        if (!req.session.soalOrder || req.session.soalOrder.ujianId !== ujianId) {
+          // Acak soal menggunakan Fisher-Yates Shuffle
+          const shuffledSoal = fisherYatesShuffle([...soal]);
+          req.session.soalOrder = {
+            ujianId: ujianId,
+            order: shuffledSoal.map(s => s.id_soal)
+          };
+          soal = shuffledSoal;
+        } else {
+          // Urutkan soal sesuai urutan yang tersimpan
+          soal.sort((a, b) => {
+            return req.session.soalOrder.order.indexOf(a.id_soal) - 
+                   req.session.soalOrder.order.indexOf(b.id_soal);
+          });
+        }
 
         res.render('siswa/ujian', { user: req.session.user, ujian: ujian, soal: soal, jawaban: jawabanObj });
       });
