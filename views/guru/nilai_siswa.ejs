@@ -107,7 +107,38 @@
                               <option value="sudah_dinilai">Sudah Dinilai</option>
                             </select>
                           </div>
+                          <div class="form-group">
+                            <label><strong>Total Nilai:</strong></label>
+                            <h3 id="totalNilai" class="text-primary">0</h3>
+                          </div>
                           <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
+
+                          <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                              const hitungTotalNilai = () => {
+                                const inputs = document.querySelectorAll('input[type="number"]');
+                                let total = 0;
+                                let count = 0;
+                                
+                                inputs.forEach(input => {
+                                  const nilai = parseInt(input.value) || 0;
+                                  total += nilai;
+                                  count++;
+                                });
+
+                                const rataRata = count > 0 ? total / count : 0;
+                                document.getElementById('totalNilai').textContent = rataRata.toFixed(2);
+                              };
+
+                              // Tambahkan event listener ke semua input nilai
+                              document.querySelectorAll('input[type="number"]').forEach(input => {
+                                input.addEventListener('input', hitungTotalNilai);
+                              });
+
+                              // Hitung total nilai awal
+                              hitungTotalNilai();
+                            });
+                          </script>
                     </form>
                   </div>
                 </div>
