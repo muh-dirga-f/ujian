@@ -267,7 +267,6 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             let totalNilaiDidapat = 0;
 
             results.forEach(result => {
-                console.log('nilai' + result)
                 const bobotSoal = result.nilai || 0;
                 totalNilaiMaksimum += bobotSoal;
 
@@ -280,18 +279,18 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             const nilai = totalNilaiMaksimum > 0 ?
                 (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
-            console.log('Debug nilai:', {
-                totalNilaiMaksimum,
-                totalNilaiDidapat,
-                nilai,
-                results: results.map(r => ({
-                    jenis: r.jenis_soal,
-                    bobot: r.nilai,
-                    jawaban: r.jawaban,
-                    kunci: r.kunci_jawaban,
-                    benar: r.jawaban === r.kunci_jawaban
-                }))
-            });
+            // console.log('Debug nilai:', {
+            //     totalNilaiMaksimum,
+            //     totalNilaiDidapat,
+            //     nilai,
+            //     results: results.map(r => ({
+            //         jenis: r.jenis_soal,
+            //         bobot: r.nilai,
+            //         jawaban: r.jawaban,
+            //         kunci: r.kunci_jawaban,
+            //         benar: r.jawaban === r.kunci_jawaban
+            //     }))
+            // });
 
             const htmlContent = `
                 <!DOCTYPE html>
@@ -410,9 +409,9 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                     <div class="results">
                         <h3>Hasil Akhir:</h3>
                         <p>Total Soal: ${totalSoal}</p>
-                        <p>Total Jawaban Benar: ${results.filter(r => 
-                            r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban
-                        ).length}</p>
+                        <p>Total Jawaban Benar: ${results.filter(r =>
+                    r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban
+                ).length}</p>
                         <p>Total Nilai Didapat: ${totalNilaiDidapat}</p>
                         <p class="${nilai >= 70 ? 'correct' : 'incorrect'}">
                             Nilai Akhir: ${nilai.toFixed(2)}
