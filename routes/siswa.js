@@ -296,15 +296,44 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                             padding: 20px 0;
                             margin-bottom: 30px;
                         }
-                        .question { margin-bottom: 20px; }
-                        .option { margin-left: 20px; }
-                        .correct { color: green; }
-                        .incorrect { color: red; }
-                        .answer-key { text-decoration: underline; }
+                        .question { 
+                            margin-bottom: 30px;
+                            padding: 15px;
+                            border: 1px solid #eee;
+                            border-radius: 5px;
+                        }
+                        .options { margin-left: 20px; }
+                        .option { margin: 5px 0; }
+                        .student-answer { 
+                            margin: 10px 0;
+                            padding: 10px;
+                            background-color: #f8f9fa;
+                            border-left: 4px solid #6c757d;
+                        }
+                        .essay-answer {
+                            margin-left: 20px;
+                            margin-top: 10px;
+                        }
+                        .correct { 
+                            color: green;
+                            border-left-color: green !important;
+                        }
+                        .incorrect { 
+                            color: red;
+                            border-left-color: red !important;
+                        }
+                        .answer-key { 
+                            margin: 10px 0;
+                            padding: 10px;
+                            background-color: #e9ecef;
+                            border-left: 4px solid #28a745;
+                        }
                         .results { 
                             margin-top: 30px;
                             padding: 20px;
                             background-color: #f9f9f9;
+                            border: 1px solid #dee2e6;
+                            border-radius: 5px;
                         }
                         .footer {
                             text-align: center;
@@ -346,14 +375,21 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                                     ${Object.entries(JSON.parse(row.pilihan_ganda)).map(([key, value]) => `
                                         <p class="option ${key === row.jawaban ? (key === row.kunci_jawaban ? 'correct' : 'incorrect') : ''} ${key === row.kunci_jawaban ? 'answer-key' : ''}">
                                             ${key}. ${value}
-                                            ${key === row.jawaban ? ' ← Jawaban Anda' : ''}
-                                            ${key === row.kunci_jawaban ? ' (Kunci)' : ''}
                                         </p>
                                     `).join('')}
+                                    <p class="student-answer ${row.jawaban === row.kunci_jawaban ? 'correct' : 'incorrect'}">
+                                        <strong>Jawaban Anda:</strong> ${row.jawaban ? `${row.jawaban}. ${JSON.parse(row.pilihan_ganda)[row.jawaban]}` : '(Tidak dijawab)'}
+                                    </p>
+                                    <p class="answer-key">
+                                        <strong>Kunci Jawaban:</strong> ${row.kunci_jawaban}. ${JSON.parse(row.pilihan_ganda)[row.kunci_jawaban]}
+                                    </p>
                                    </div>`
-                                : `<p class="option ${row.is_correct ? 'correct' : 'incorrect'}">
-                                    <strong>Jawaban:</strong> ${row.jawaban || '-'}
-                                   </p>`
+                                : `<div class="essay-answer">
+                                    <p class="student-answer">
+                                        <strong>Jawaban Anda:</strong><br>
+                                        ${row.jawaban || '(Tidak dijawab)'}
+                                    </p>
+                                   </div>`
                             }
                         </div>
                     `).join('')}
