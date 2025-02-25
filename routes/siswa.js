@@ -35,6 +35,21 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
         if (activeExam) {
             return res.redirect(`/siswa/ujian/${activeExam.id_ujian}`);
         }
+
+        db.get(`
+          SELECT ks.*, s.nama_sekolah
+          FROM kelas_siswa ks
+          JOIN siswa si ON ks.nis = si.nis
+          JOIN sekolah s ON si.id_sekolah = s.id_sekolah
+          WHERE ks.nis = ?
+        `, [req.session.user.username], (err, row) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Server error');
+            }
+            res.render('siswa/dashboard', { user: req.session.user, kelas: row });
+        });
+    });
     db.get(`
       SELECT ks.*, s.nama_sekolah
       FROM kelas_siswa ks
