@@ -261,24 +261,29 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
 
             // Generate HTML content
             const totalSoal = results.length;
-            // Hitung nilai berdasarkan jenis soal
-            const nilaiPG = results
-                .filter(r => r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban)
-                .length;
             
-            const totalPG = results.filter(r => r.jenis_soal === 'pilihan_ganda').length;
-            const totalEssay = results.filter(r => r.jenis_soal === 'essay').length;
+            // Hitung total nilai maksimum dan nilai yang didapat
+            let totalNilaiMaksimum = 0;
+            let totalNilaiDidapat = 0;
             
-            // Nilai akhir: 60% PG + 40% Essay jika ada essay, 100% PG jika tidak ada essay
-            let nilai;
-            if (totalEssay > 0) {
-                const nilaiEssayPerSoal = results
-                    .filter(r => r.jenis_soal === 'essay' && r.jawaban)
-                    .length;
-                nilai = ((nilaiPG / totalPG) * 60) + ((nilaiEssayPerSoal / totalEssay) * 40);
-            } else {
-                nilai = (nilaiPG / totalPG) * 100;
-            }
+            results.forEach(result => {
+                // Tambahkan bobot nilai soal ke total maksimum
+                totalNilaiMaksimum += result.bobot_nilai || 0;
+                
+                // Hitung nilai yang didapat
+                if (result.jenis_soal === 'pilihan_ganda') {
+                    if (result.jawaban === result.kunci_jawaban) {
+                        totalNilaiDidapat += result.bobot_nilai || 0;
+                    }
+                } else if (result.jenis_soal === 'essay' && result.jawaban) {
+                    // Untuk essay, nilai diberikan jika ada jawaban
+                    totalNilaiDidapat += result.bobot_nilai || 0;
+                }
+            });
+            
+            // Hitung nilai akhir (skala 100)
+            const nilai = totalNilaiMaksimum > 0 ? 
+                (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
             const htmlContent = `
                 <!DOCTYPE html>
