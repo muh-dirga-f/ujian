@@ -266,18 +266,19 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             let totalNilaiMaksimum = 0;
             let totalNilaiDidapat = 0;
             
+            // Hitung total soal yang benar
+            let totalBenar = 0;
             results.forEach(result => {
-                const bobotNilai = result.bobot_nilai || 1; // Default bobot 1 jika tidak ada
-                totalNilaiMaksimum += bobotNilai;
-                
-                if (result.jenis_soal === 'pilihan_ganda') {
-                    if (result.jawaban === result.kunci_jawaban) {
-                        totalNilaiDidapat += bobotNilai;
-                    }
-                } else if (result.jenis_soal === 'essay' && result.jawaban) {
-                    totalNilaiDidapat += bobotNilai;
+                if (result.jenis_soal === 'pilihan_ganda' && result.jawaban === result.kunci_jawaban) {
+                    totalBenar++;
                 }
             });
+
+            // Hitung nilai berdasarkan persentase jawaban benar
+            const totalSoal = results.length;
+            const nilaiPerSoal = 100 / totalSoal;
+            totalNilaiDidapat = totalBenar * nilaiPerSoal;
+            totalNilaiMaksimum = 100;
 
             console.log('Debug nilai:', {
                 totalNilaiMaksimum,
@@ -480,27 +481,25 @@ router.post('/ujian/:id/selesai', (req, res) => {
         let totalNilaiMaksimum = 0;
         let totalNilaiDidapat = 0;
 
+        // Hitung total soal yang benar
+        let totalBenar = 0;
         results.forEach(result => {
-            const bobotNilai = result.bobot_nilai || 1; // Default bobot 1 jika tidak ada
-            totalNilaiMaksimum += bobotNilai;
-            
-            if (result.jenis_soal === 'pilihan_ganda') {
-                if (result.jawaban === result.kunci_jawaban) {
-                    totalNilaiDidapat += bobotNilai;
-                }
-            } else if (result.jenis_soal === 'essay' && result.jawaban) {
-                totalNilaiDidapat += bobotNilai;
+            if (result.jenis_soal === 'pilihan_ganda' && result.jawaban === result.kunci_jawaban) {
+                totalBenar++;
             }
         });
 
-        console.log('Debug nilai akhir:', {
-            totalNilaiMaksimum,
-            totalNilaiDidapat,
-            nilaiAkhir: (totalNilaiDidapat / totalNilaiMaksimum) * 100
-        });
+        // Hitung nilai berdasarkan persentase jawaban benar
+        const totalSoal = results.length;
+        const nilaiPerSoal = 100 / totalSoal;
+        const nilaiAkhir = totalBenar * nilaiPerSoal;
 
-        const nilaiAkhir = totalNilaiMaksimum > 0 ? 
-            (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
+        console.log('Debug nilai akhir:', {
+            totalSoal,
+            totalBenar,
+            nilaiPerSoal,
+            nilaiAkhir
+        });
 
         // Tandai ujian sebagai selesai dan simpan nilai
         db.run(`
