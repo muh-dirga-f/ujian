@@ -103,6 +103,42 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
   
   <script>
+    // Aktifkan mode fullscreen saat memulai ujian
+    function enableFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+
+    // Deteksi jika user keluar dari fullscreen
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+          !document.mozFullscreenElement && !document.msFullscreenElement) {
+        alert('Mohon tetap dalam mode fullscreen selama ujian berlangsung!');
+        enableFullscreen();
+      }
+    }
+
+    // Deteksi perpindahan tab/window
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState !== 'visible') {
+        alert('Mohon jangan berpindah tab/window selama ujian berlangsung!');
+      }
+    });
+
+    // Aktifkan fullscreen saat halaman dimuat
+    window.onload = enableFullscreen;
+
     // Hitung mundur waktu ujian
     const endTime = new Date('<%= ujian.waktu_selesai %>').getTime();
     
@@ -157,8 +193,41 @@
       });
     });
 
+    // Fungsi untuk memeriksa jawaban yang belum diisi
+    function checkUnansweredQuestions() {
+      const radioGroups = document.querySelectorAll('input[type="radio"]');
+      const textareas = document.querySelectorAll('textarea');
+      const unansweredQuestions = [];
+
+      // Cek radio buttons (pilihan ganda)
+      const radioGroupNames = new Set(Array.from(radioGroups).map(radio => radio.name));
+      radioGroupNames.forEach(name => {
+        const answered = document.querySelector(`input[name="${name}"]:checked`);
+        if (!answered) {
+          const questionNumber = name.split('_')[1];
+          unansweredQuestions.push(questionNumber);
+        }
+      });
+
+      // Cek textareas (essay)
+      textareas.forEach(textarea => {
+        if (!textarea.value.trim()) {
+          const questionNumber = textarea.name.split('_')[1];
+          unansweredQuestions.push(questionNumber);
+        }
+      });
+
+      return unansweredQuestions;
+    }
+
     // Fungsi untuk menyelesaikan ujian
     function selesaiUjian() {
+      const unansweredQuestions = checkUnansweredQuestions();
+      
+      if (unansweredQuestions.length > 0) {
+        alert(`Mohon jawab semua pertanyaan terlebih dahulu!\nSoal yang belum dijawab: ${unansweredQuestions.join(', ')}`);
+        return;
+      }
       fetch('/siswa/ujian/<%= ujian.id_ujian %>/selesai', {
         method: 'POST',
       })
