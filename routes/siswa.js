@@ -208,42 +208,90 @@ router.post('/ujian/:id/jawab', (req, res) => {
 });
 
 // Rute untuk menyelesaikan ujian
+const PDFDocument = require('pdfkit');
+
 // Rute untuk mengunduh hasil ujian
 router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) => {
     const ujianId = req.params.id;
     const nis = req.session.user.username;
 
-    db.all(`
-        SELECT s.soal, s.jenis_soal, s.pilihan_ganda, s.kunci_jawaban,
-               js.jawaban, 
-               CASE WHEN js.jawaban = s.kunci_jawaban THEN 1 ELSE 0 END as is_correct
-        FROM soal s
-        LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
-        WHERE s.id_ujian = ?
-    `, [nis, ujianId], (err, results) => {
+    // Ambil data ujian
+    db.get(`
+        SELECT u.judul_ujian, u.waktu_mulai, m.nama_mapel, k.kelas, k.minor_kelas
+        FROM ujian u
+        JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+        JOIN kelas k ON u.id_kelas = k.id_kelas
+        WHERE u.id_ujian = ?
+    `, [ujianId], (err, ujian) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Server error');
         }
 
-        let content = 'HASIL UJIAN\n\n';
-        results.forEach((row, index) => {
-            content += `Soal ${index + 1}: ${row.soal}\n`;
-            if (row.jenis_soal === 'pilihan_ganda') {
-                const options = JSON.parse(row.pilihan_ganda);
-                content += `Pilihan Jawaban:\n`;
-                Object.entries(options).forEach(([key, value]) => {
-                    content += `${key}. ${value}\n`;
-                });
+        // Ambil soal dan jawaban
+        db.all(`
+            SELECT s.soal, s.jenis_soal, s.pilihan_ganda, s.kunci_jawaban,
+                   js.jawaban, 
+                   CASE WHEN js.jawaban = s.kunci_jawaban THEN 1 ELSE 0 END as is_correct
+            FROM soal s
+            LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
+            WHERE s.id_ujian = ?
+        `, [nis, ujianId], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Server error');
             }
-            content += `Jawaban Anda: ${row.jawaban || '-'}\n`;
-            content += `Kunci Jawaban: ${row.kunci_jawaban}\n`;
-            content += `Status: ${row.is_correct ? 'Benar' : 'Salah'}\n\n`;
-        });
 
-        res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Content-Disposition', `attachment; filename=hasil-ujian-${ujianId}.txt`);
-        res.send(content);
+            // Buat PDF
+            const doc = new PDFDocument();
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=hasil-ujian-${ujianId}.pdf`);
+            doc.pipe(res);
+
+            // Header
+            doc.fontSize(16).text('HASIL UJIAN', {align: 'center'});
+            doc.moveDown();
+            doc.fontSize(12).text(`Ujian: ${ujian.judul_ujian}`);
+            doc.text(`Mata Pelajaran: ${ujian.nama_mapel}`);
+            doc.text(`Kelas: ${ujian.kelas} ${ujian.minor_kelas}`);
+            doc.text(`Tanggal: ${new Date(ujian.waktu_mulai).toLocaleDateString('id-ID')}`);
+            doc.moveDown();
+
+            // Soal dan Jawaban
+            results.forEach((row, index) => {
+                doc.fontSize(12).text(`Soal ${index + 1}: ${row.soal}`);
+                
+                if (row.jenis_soal === 'pilihan_ganda') {
+                    const options = JSON.parse(row.pilihan_ganda);
+                    doc.fontSize(10).text('Pilihan Jawaban:');
+                    Object.entries(options).forEach(([key, value]) => {
+                        doc.text(`${key}. ${value}`);
+                    });
+                }
+
+                doc.fontSize(10)
+                   .fillColor(row.is_correct ? 'green' : 'red')
+                   .text(`Jawaban Anda: ${row.jawaban || '-'}`)
+                   .text(`Kunci Jawaban: ${row.kunci_jawaban}`)
+                   .text(`Status: ${row.is_correct ? 'Benar' : 'Salah'}`)
+                   .fillColor('black');
+                
+                doc.moveDown();
+            });
+
+            // Hitung total nilai
+            const totalSoal = results.length;
+            const benar = results.filter(r => r.is_correct).length;
+            const nilai = (benar / totalSoal) * 100;
+
+            doc.moveDown()
+               .fontSize(12)
+               .text(`Total Soal: ${totalSoal}`)
+               .text(`Jawaban Benar: ${benar}`)
+               .text(`Nilai: ${nilai.toFixed(2)}`);
+
+            doc.end();
+        });
     });
 });
 

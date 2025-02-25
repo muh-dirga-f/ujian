@@ -45,6 +45,7 @@
                         <th>Kelas</th>
                         <th>Tanggal Ujian</th>
                         <th>Nilai</th>
+                        <th>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -54,9 +55,9 @@
                           <td><%= nilai.nama_mapel %></td>
                           <td><%= nilai.kelas %> <%= nilai.minor_kelas %></td>
                           <td><%= new Date(nilai.waktu_mulai).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></td>
+                          <td><%= nilai.nilai_total %></td>
                           <td>
-                            <%= nilai.nilai_total %>
-                            <a href="/siswa/nilai/download/<%= nilai.id_ujian %>" class="btn btn-sm btn-info ml-2">
+                            <a href="/siswa/nilai/download/<%= nilai.id_ujian %>" class="btn btn-sm btn-info">
                               <i class="fas fa-download"></i> Unduh Detail
                             </a>
                           </td>
