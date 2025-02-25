@@ -224,14 +224,17 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
     const ujianId = req.params.id;
     const nis = req.session.user.username;
 
-    // Ambil data ujian
+    // Ambil data ujian dan siswa
     db.get(`
-        SELECT u.judul_ujian, u.waktu_mulai, m.nama_mapel, k.kelas, k.minor_kelas
+        SELECT u.judul_ujian, u.waktu_mulai, m.nama_mapel, k.kelas, k.minor_kelas,
+               s.nama as nama_siswa, s.nis, sk.nama_sekolah
         FROM ujian u
         JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
         JOIN kelas k ON u.id_kelas = k.id_kelas
+        JOIN siswa s ON s.nis = ?
+        JOIN sekolah sk ON s.id_sekolah = sk.id_sekolah
         WHERE u.id_ujian = ?
-    `, [ujianId], (err, ujian) => {
+    `, [nis, ujianId], (err, ujian) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Server error');
@@ -245,6 +248,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             FROM soal s
             LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
             WHERE s.id_ujian = ?
+            ORDER BY s.id_soal ASC
         `, [nis, ujianId], (err, results) => {
             if (err) {
                 console.error(err);
@@ -252,52 +256,113 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             }
 
             // Buat PDF
-            const doc = new PDFDocument();
+            const doc = new PDFDocument({
+                size: 'A4',
+                margin: 50
+            });
+
+            // Stream ke response
             res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=hasil-ujian-${ujianId}.pdf`);
+            res.setHeader('Content-Disposition', `attachment; filename=hasil-ujian-${ujian.nama_mapel.replace(/\s+/g, '-')}-${ujian.nis}.pdf`);
             doc.pipe(res);
 
-            // Header
-            doc.fontSize(16).text('HASIL UJIAN', {align: 'center'});
+            // Header dengan logo sekolah (jika ada)
+            doc.fontSize(18).text('HASIL UJIAN SEKOLAH', {align: 'center'});
+            doc.fontSize(14).text(ujian.nama_sekolah, {align: 'center'});
             doc.moveDown();
-            doc.fontSize(12).text(`Ujian: ${ujian.judul_ujian}`);
-            doc.text(`Mata Pelajaran: ${ujian.nama_mapel}`);
-            doc.text(`Kelas: ${ujian.kelas} ${ujian.minor_kelas}`);
-            doc.text(`Tanggal: ${new Date(ujian.waktu_mulai).toLocaleDateString('id-ID')}`);
+
+            // Informasi ujian
+            doc.fontSize(12);
+            const borderTop = doc.y;
+            doc.text('Informasi Ujian:', {continued: true})
+               .text('Informasi Siswa:', {align: 'right'});
+            
+            doc.fontSize(10);
+            doc.text(`Mata Pelajaran: ${ujian.nama_mapel}`, {continued: true})
+               .text(`Nama: ${ujian.nama_siswa}`, {align: 'right'});
+            doc.text(`Kelas: ${ujian.kelas} ${ujian.minor_kelas}`, {continued: true})
+               .text(`NIS: ${ujian.nis}`, {align: 'right'});
+            doc.text(`Tanggal: ${new Date(ujian.waktu_mulai).toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}`);
+            
+            const borderBottom = doc.y + 10;
+            doc.moveTo(50, borderTop - 5)
+               .lineTo(545, borderTop - 5)
+               .stroke();
+            doc.moveTo(50, borderBottom)
+               .lineTo(545, borderBottom)
+               .stroke();
+            
             doc.moveDown();
 
             // Soal dan Jawaban
             results.forEach((row, index) => {
-                doc.fontSize(12).text(`Soal ${index + 1}: ${row.soal}`);
+                doc.fontSize(11).text(`Soal ${index + 1}:`, {underline: true});
+                doc.fontSize(10).text(row.soal);
                 
                 if (row.jenis_soal === 'pilihan_ganda') {
                     const options = JSON.parse(row.pilihan_ganda);
-                    doc.fontSize(10).text('Pilihan Jawaban:');
+                    doc.moveDown(0.5);
                     Object.entries(options).forEach(([key, value]) => {
-                        doc.text(`${key}. ${value}`);
+                        const isJawaban = key === row.jawaban;
+                        const isKunci = key === row.kunci_jawaban;
+                        
+                        doc.fontSize(9)
+                           .fillColor(isJawaban ? (isKunci ? 'green' : 'red') : 'black')
+                           .text(`${key}. ${value}`, {
+                               continued: true,
+                               underline: isKunci
+                           })
+                           .text(isJawaban ? ' ← Jawaban Anda' : '', {
+                               continued: true
+                           })
+                           .text(isKunci ? ' (Kunci)' : '')
+                           .fillColor('black');
                     });
+                } else {
+                    doc.moveDown(0.5)
+                       .fontSize(9)
+                       .text('Jawaban:', {continued: true})
+                       .fillColor(row.is_correct ? 'green' : 'red')
+                       .text(` ${row.jawaban || '-'}`)
+                       .fillColor('black');
                 }
-
-                doc.fontSize(10)
-                   .fillColor(row.is_correct ? 'green' : 'red')
-                   .text(`Jawaban Anda: ${row.jawaban || '-'}`)
-                   .text(`Kunci Jawaban: ${row.kunci_jawaban}`)
-                   .text(`Status: ${row.is_correct ? 'Benar' : 'Salah'}`)
-                   .fillColor('black');
                 
                 doc.moveDown();
             });
 
-            // Hitung total nilai
+            // Hasil akhir
             const totalSoal = results.length;
             const benar = results.filter(r => r.is_correct).length;
             const nilai = (benar / totalSoal) * 100;
 
             doc.moveDown()
                .fontSize(12)
+               .text('Hasil Akhir:', {underline: true});
+            
+            doc.fontSize(10)
                .text(`Total Soal: ${totalSoal}`)
                .text(`Jawaban Benar: ${benar}`)
-               .text(`Nilai: ${nilai.toFixed(2)}`);
+               .text(`Nilai Akhir: ${nilai.toFixed(2)}`, {
+                   color: nilai >= 70 ? 'green' : 'red'
+               });
+
+            // Footer
+            const bottomPos = doc.page.height - 50;
+            doc.fontSize(8)
+               .text(
+                   'Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah',
+                   50,
+                   bottomPos,
+                   {
+                       align: 'center',
+                       width: doc.page.width - 100
+                   }
+               );
 
             doc.end();
         });
