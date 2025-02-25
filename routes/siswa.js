@@ -232,7 +232,8 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
         FROM ujian u
         JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
         JOIN kelas k ON u.id_kelas = k.id_kelas
-        JOIN siswa s ON s.nis = ?
+        JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
+        JOIN siswa s ON ks.nis = s.nis AND s.nis = ?
         JOIN sekolah sk ON s.id_sekolah = sk.id_sekolah
         WHERE u.id_ujian = ?
     `, [nis, ujianId], (err, ujian) => {
