@@ -262,10 +262,6 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             // Generate HTML content
             const totalSoal = results.length;
             
-            // Hitung total nilai maksimum dan nilai yang didapat
-            let totalNilaiMaksimum = 0;
-            let totalNilaiDidapat = 0;
-            
             // Hitung total nilai berdasarkan bobot soal
             let totalNilaiMaksimum = 0;
             let totalNilaiDidapat = 0;
@@ -480,9 +476,6 @@ router.post('/ujian/:id/selesai', (req, res) => {
             console.error(err);
             return res.status(500).json({ error: 'Server error' });
         }
-
-        let totalNilaiMaksimum = 0;
-        let totalNilaiDidapat = 0;
 
         // Hitung total nilai berdasarkan bobot soal
         let totalNilaiMaksimum = 0;
