@@ -266,19 +266,22 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             let totalNilaiMaksimum = 0;
             let totalNilaiDidapat = 0;
             
-            // Hitung total soal yang benar
-            let totalBenar = 0;
+            // Hitung total nilai berdasarkan bobot soal
+            let totalNilaiMaksimum = 0;
+            let totalNilaiDidapat = 0;
+            
             results.forEach(result => {
+                const bobotSoal = result.nilai || 0;
+                totalNilaiMaksimum += bobotSoal;
+                
                 if (result.jenis_soal === 'pilihan_ganda' && result.jawaban === result.kunci_jawaban) {
-                    totalBenar++;
+                    totalNilaiDidapat += bobotSoal;
                 }
             });
 
-            // Hitung nilai berdasarkan persentase jawaban benar
-            const totalSoal = results.length;
-            const nilaiPerSoal = 100 / totalSoal;
-            totalNilaiDidapat = totalBenar * nilaiPerSoal;
-            totalNilaiMaksimum = 100;
+            // Hitung nilai akhir (skala 100)
+            const nilai = totalNilaiMaksimum > 0 ? 
+                (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
             console.log('Debug nilai:', {
                 totalNilaiMaksimum,
@@ -481,24 +484,34 @@ router.post('/ujian/:id/selesai', (req, res) => {
         let totalNilaiMaksimum = 0;
         let totalNilaiDidapat = 0;
 
-        // Hitung total soal yang benar
-        let totalBenar = 0;
+        // Hitung total nilai berdasarkan bobot soal
+        let totalNilaiMaksimum = 0;
+        let totalNilaiDidapat = 0;
+        
         results.forEach(result => {
+            const bobotSoal = result.nilai || 0;
+            totalNilaiMaksimum += bobotSoal;
+            
             if (result.jenis_soal === 'pilihan_ganda' && result.jawaban === result.kunci_jawaban) {
-                totalBenar++;
+                totalNilaiDidapat += bobotSoal;
             }
         });
 
-        // Hitung nilai berdasarkan persentase jawaban benar
-        const totalSoal = results.length;
-        const nilaiPerSoal = 100 / totalSoal;
-        const nilaiAkhir = totalBenar * nilaiPerSoal;
+        // Hitung nilai akhir (skala 100)
+        const nilaiAkhir = totalNilaiMaksimum > 0 ? 
+            (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
         console.log('Debug nilai akhir:', {
-            totalSoal,
-            totalBenar,
-            nilaiPerSoal,
-            nilaiAkhir
+            totalNilaiMaksimum,
+            totalNilaiDidapat,
+            nilaiAkhir,
+            results: results.map(r => ({
+                jenis: r.jenis_soal,
+                nilai: r.nilai,
+                jawaban: r.jawaban,
+                kunci: r.kunci_jawaban,
+                benar: r.jawaban === r.kunci_jawaban
+            }))
         });
 
         // Tandai ujian sebagai selesai dan simpan nilai
