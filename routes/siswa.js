@@ -357,7 +357,8 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                .font('Helvetica').fontSize(10).text(`Total Soal: ${totalSoal}`)
                .text(`Jawaban Benar: ${benar}`)
                .text(`Nilai Akhir: ${nilai.toFixed(2)}`, {
-                   color: nilai >= 70 ? 'green' : 'red'
+                   color: nilai >= 70 ? 'green' : 'red',
+                   font: 'Helvetica'
                });
 
             // Footer
