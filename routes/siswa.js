@@ -348,7 +348,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                .text('Hasil Akhir:', {underline: true});
             
             doc.fontSize(10)
-               .text(`Total Soal: ${totalSoal}`)
+               .font('Helvetica').fontSize(10).text(`Total Soal: ${totalSoal}`)
                .text(`Jawaban Benar: ${benar}`)
                .text(`Nilai Akhir: ${nilai.toFixed(2)}`, {
                    color: nilai >= 70 ? 'green' : 'red'
