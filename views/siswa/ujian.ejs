@@ -231,25 +231,25 @@
 
     // Fungsi untuk memeriksa jawaban yang belum diisi
     function checkUnansweredQuestions() {
-      const radioGroups = document.querySelectorAll('input[type="radio"]');
-      const textareas = document.querySelectorAll('textarea');
+      const questions = document.querySelectorAll('.form-group');
       const unansweredQuestions = [];
 
-      // Cek radio buttons (pilihan ganda)
-      const radioGroupNames = new Set(Array.from(radioGroups).map(radio => radio.name));
-      radioGroupNames.forEach(name => {
-        const answered = document.querySelector(`input[name="${name}"]:checked`);
-        if (!answered) {
-          const questionNumber = name.split('_')[1];
-          unansweredQuestions.push(questionNumber);
-        }
-      });
+      questions.forEach((question, index) => {
+        const questionNumber = index + 1;
+        const radioButtons = question.querySelectorAll('input[type="radio"]');
+        const textarea = question.querySelector('textarea');
 
-      // Cek textareas (essay)
-      textareas.forEach(textarea => {
-        if (!textarea.value.trim()) {
-          const questionNumber = textarea.name.split('_')[1];
-          unansweredQuestions.push(questionNumber);
+        if (radioButtons.length > 0) {
+          // Soal pilihan ganda
+          const answered = Array.from(radioButtons).some(radio => radio.checked);
+          if (!answered) {
+            unansweredQuestions.push(questionNumber);
+          }
+        } else if (textarea) {
+          // Soal essay
+          if (!textarea.value.trim()) {
+            unansweredQuestions.push(questionNumber);
+          }
         }
       });
 
