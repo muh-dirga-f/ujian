@@ -267,18 +267,28 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             let totalNilaiDidapat = 0;
             
             results.forEach(result => {
-                // Tambahkan bobot nilai soal ke total maksimum
-                totalNilaiMaksimum += result.bobot_nilai || 0;
+                const bobotNilai = result.bobot_nilai || 1; // Default bobot 1 jika tidak ada
+                totalNilaiMaksimum += bobotNilai;
                 
-                // Hitung nilai yang didapat
                 if (result.jenis_soal === 'pilihan_ganda') {
                     if (result.jawaban === result.kunci_jawaban) {
-                        totalNilaiDidapat += result.bobot_nilai || 0;
+                        totalNilaiDidapat += bobotNilai;
                     }
                 } else if (result.jenis_soal === 'essay' && result.jawaban) {
-                    // Untuk essay, nilai diberikan jika ada jawaban
-                    totalNilaiDidapat += result.bobot_nilai || 0;
+                    totalNilaiDidapat += bobotNilai;
                 }
+            });
+
+            console.log('Debug nilai:', {
+                totalNilaiMaksimum,
+                totalNilaiDidapat,
+                results: results.map(r => ({
+                    jenis: r.jenis_soal,
+                    bobot: r.bobot_nilai,
+                    jawaban: r.jawaban,
+                    kunci: r.kunci_jawaban,
+                    benar: r.jawaban === r.kunci_jawaban
+                }))
             });
             
             // Hitung nilai akhir (skala 100)
@@ -471,15 +481,22 @@ router.post('/ujian/:id/selesai', (req, res) => {
         let totalNilaiDidapat = 0;
 
         results.forEach(result => {
-            totalNilaiMaksimum += result.bobot_nilai || 0;
+            const bobotNilai = result.bobot_nilai || 1; // Default bobot 1 jika tidak ada
+            totalNilaiMaksimum += bobotNilai;
             
             if (result.jenis_soal === 'pilihan_ganda') {
                 if (result.jawaban === result.kunci_jawaban) {
-                    totalNilaiDidapat += result.bobot_nilai || 0;
+                    totalNilaiDidapat += bobotNilai;
                 }
             } else if (result.jenis_soal === 'essay' && result.jawaban) {
-                totalNilaiDidapat += result.bobot_nilai || 0;
+                totalNilaiDidapat += bobotNilai;
             }
+        });
+
+        console.log('Debug nilai akhir:', {
+            totalNilaiMaksimum,
+            totalNilaiDidapat,
+            nilaiAkhir: (totalNilaiDidapat / totalNilaiMaksimum) * 100
         });
 
         const nilaiAkhir = totalNilaiMaksimum > 0 ? 
