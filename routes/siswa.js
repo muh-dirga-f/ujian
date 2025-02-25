@@ -413,8 +413,8 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                     r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban
                 ).length}</p>
                         <p>Total Nilai Didapat: ${totalNilaiDidapat}</p>
-                        <p class="${nilai >= 70 ? 'correct' : 'incorrect'}">
-                            Nilai Akhir: ${nilai.toFixed(2)}
+                        <p class="${totalNilaiDidapat >= (totalNilaiMaksimum * 0.7) ? 'correct' : 'incorrect'}">
+                            Nilai Akhir: ${totalNilaiDidapat}
                         </p>
                     </div>
 
@@ -489,14 +489,9 @@ router.post('/ujian/:id/selesai', (req, res) => {
             }
         });
 
-        // Hitung nilai akhir (skala 100)
-        const nilaiAkhir = totalNilaiMaksimum > 0 ?
-            (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
-
         console.log('Debug nilai akhir:', {
             totalNilaiMaksimum,
             totalNilaiDidapat,
-            nilaiAkhir,
             results: results.map(r => ({
                 jenis: r.jenis_soal,
                 nilai: r.nilai,
@@ -512,7 +507,7 @@ router.post('/ujian/:id/selesai', (req, res) => {
             VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP, ?)
             ON CONFLICT(id_ujian, nis)
             DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP, nilai_total = ?
-        `, [ujianId, req.session.user.username, nilaiAkhir, nilaiAkhir], (err) => {
+        `, [ujianId, req.session.user.username, totalNilaiDidapat, totalNilaiDidapat], (err) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Server error' });
