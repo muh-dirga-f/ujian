@@ -254,15 +254,20 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                 return res.status(500).send('Server error');
             }
 
-            // Buat PDF dengan font yang mendukung karakter khusus
+            // Buat PDF dengan encoding yang tepat
             const doc = new PDFDocument({
                 size: 'A4',
                 margin: 50,
-                font: 'Helvetica'
+                lang: 'id',
+                displayTitle: true,
+                info: {
+                    Title: 'Hasil Ujian Sekolah',
+                    Author: 'Sistem Ujian Sekolah',
+                    Subject: ujian.judul_ujian,
+                    Keywords: 'ujian, sekolah, hasil',
+                    Producer: 'Sistem Ujian Sekolah'
+                }
             });
-
-            // Register font untuk karakter khusus
-            doc.registerFont('Helvetica-Bold', 'Helvetica-Bold');
 
             // Stream ke response
             res.setHeader('Content-Type', 'application/pdf');
@@ -270,17 +275,18 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             doc.pipe(res);
 
             // Header dengan logo sekolah (jika ada)
-            doc.font('Helvetica-Bold').fontSize(18).text('HASIL UJIAN SEKOLAH', {align: 'center'});
-            doc.font('Helvetica').fontSize(14).text(ujian.nama_sekolah, {align: 'center'});
+            // Header
+            doc.fontSize(18).text('HASIL UJIAN SEKOLAH', {align: 'center'});
+            doc.fontSize(14).text(Buffer.from(ujian.nama_sekolah).toString(), {align: 'center'});
             doc.moveDown();
 
             // Informasi ujian
-            doc.font('Helvetica-Bold').fontSize(12);
+            doc.fontSize(12);
             const borderTop = doc.y;
             doc.text('Informasi Ujian:', {continued: true})
                .text('Informasi Siswa:', {align: 'right'});
             
-            doc.font('Helvetica').fontSize(10);
+            doc.fontSize(10);
             doc.text(`Mata Pelajaran: ${ujian.nama_mapel}`, {continued: true})
                .text(`Nama: ${ujian.nama_siswa}`, {align: 'right'});
             doc.text(`Kelas: ${ujian.kelas} ${ujian.minor_kelas}`, {continued: true})
@@ -304,8 +310,8 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
 
             // Soal dan Jawaban
             results.forEach((row, index) => {
-                doc.font('Helvetica-Bold').fontSize(11).text(`Soal ${index + 1}:`, {underline: true});
-                doc.font('Helvetica').fontSize(10).text(row.soal);
+                doc.fontSize(11).text(`Soal ${index + 1}:`, {underline: true});
+                doc.fontSize(10).text(Buffer.from(row.soal).toString());
                 
                 if (row.jenis_soal === 'pilihan_ganda') {
                     const options = JSON.parse(row.pilihan_ganda);
@@ -314,7 +320,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                         const isJawaban = key === row.jawaban;
                         const isKunci = key === row.kunci_jawaban;
                         
-                        doc.font('Helvetica').fontSize(9)
+                        doc.fontSize(9)
                            .fillColor(isJawaban ? (isKunci ? 'green' : 'red') : 'black')
                            .text(`${key}. ${value}`, {
                                continued: true,
@@ -328,7 +334,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                     });
                 } else {
                     doc.moveDown(0.5)
-                       .font('Helvetica').fontSize(9)
+                       .fontSize(9)
                        .text('Jawaban:', {continued: true})
                        .fillColor(row.is_correct ? 'green' : 'red')
                        .text(` ${row.jawaban || '-'}`)
@@ -344,7 +350,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             const nilai = (benar / totalSoal) * 100;
 
             doc.moveDown()
-               .font('Helvetica-Bold').fontSize(12)
+               .fontSize(12)
                .text('Hasil Akhir:', {underline: true});
             
             doc.fontSize(10)
@@ -356,7 +362,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
 
             // Footer
             const bottomPos = doc.page.height - 50;
-            doc.font('Helvetica').fontSize(8)
+            doc.fontSize(8)
                .text(
                    'Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah',
                    50,
