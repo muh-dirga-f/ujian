@@ -110,7 +110,12 @@
     document.addEventListener('DOMContentLoaded', async () => {
       await ExamSecurity.setup();
       await FullscreenManager.setupFullscreenListeners();
-      await FullscreenManager.enable();
+      
+      // Aktifkan fullscreen saat form pertama kali diklik
+      const ujianForm = document.getElementById('ujianForm');
+      ujianForm.addEventListener('click', async () => {
+        await FullscreenManager.enable();
+      }, { once: true }); // Hanya trigger sekali
     });
 
     // Hitung mundur waktu ujian
