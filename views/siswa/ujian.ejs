@@ -113,6 +113,12 @@
       } else if (elem.msRequestFullscreen) {
         elem.msRequestFullscreen();
       }
+      
+      // Sembunyikan navigasi
+      document.querySelector('.main-header').style.display = 'none';
+      document.querySelector('.main-sidebar').style.display = 'none';
+      document.querySelector('.main-footer').style.display = 'none';
+      document.querySelector('.content-wrapper').style.marginLeft = '0';
     }
 
     // Deteksi jika user keluar dari fullscreen
@@ -128,6 +134,36 @@
         enableFullscreen();
       }
     }
+
+    // Mencegah navigasi keluar
+    window.onbeforeunload = function() {
+      return "Anda yakin ingin meninggalkan halaman ujian?";
+    };
+
+    // Nonaktifkan tombol kembali browser
+    history.pushState(null, null, location.href);
+    window.onpopstate = function () {
+        history.go(1);
+    };
+
+    // Nonaktifkan klik kanan
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // Nonaktifkan shortcut keyboard
+    document.addEventListener('keydown', function(e) {
+        // Mencegah Alt+Tab, Alt+F4, Ctrl+W, dll
+        if ((e.ctrlKey && e.key === 'w') || 
+            (e.altKey && e.key === 'Tab') ||
+            (e.altKey && e.key === 'F4') ||
+            (e.key === 'F11') ||
+            (e.ctrlKey && e.key === 'r') ||
+            (e.ctrlKey && e.key === 'R')) {
+            e.preventDefault();
+            return false;
+        }
+    });
 
     // Deteksi perpindahan tab/window
     document.addEventListener('visibilitychange', function() {
