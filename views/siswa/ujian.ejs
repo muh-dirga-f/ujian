@@ -102,96 +102,16 @@
   <!-- AdminLTE App -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
   
+  <!-- Exam Utilities -->
+  <script src="/js/exam-utils.js"></script>
+  
   <script>
-    // Aktifkan mode fullscreen saat memulai ujian
-    async function enableFullscreen() {
-      try {
-        // Trigger fullscreen on first click
-        document.addEventListener("click", function() {
-          var el = document.documentElement,
-            rfs = el.requestFullscreen
-              || el.webkitRequestFullScreen
-              || el.mozRequestFullScreen
-              || el.msRequestFullscreen;
-
-          rfs.call(el);
-        }, { once: true }); // Only trigger once
-
-        // Sembunyikan navigasi setelah fullscreen aktif
-        document.querySelector('.main-header').style.display = 'none';
-        document.querySelector('.main-sidebar').style.display = 'none';
-        document.querySelector('.main-footer').style.display = 'none';
-        document.querySelector('.content-wrapper').style.marginLeft = '0';
-
-        // Kunci orientasi layar (jika didukung)
-        if (window.screen && window.screen.orientation && window.screen.orientation.lock) {
-          await window.screen.orientation.lock('landscape');
-        }
-
-        // Tambahan untuk Chrome
-        if (document.webkitIsFullScreen === false) {
-          document.documentElement.webkitRequestFullscreen();
-        }
-
-      } catch (e) {
-        console.error('Error enabling fullscreen:', e);
-        alert('Mohon izinkan mode fullscreen untuk melanjutkan ujian');
-      }
-    }
-
-    // Deteksi jika user keluar dari fullscreen
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-    function handleFullscreenChange() {
-      if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-          !document.mozFullscreenElement && !document.msFullscreenElement) {
-        alert('Mohon tetap dalam mode fullscreen selama ujian berlangsung!');
-        enableFullscreen();
-      }
-    }
-
-    // Mencegah navigasi keluar
-    window.onbeforeunload = function() {
-      return "Anda yakin ingin meninggalkan halaman ujian?";
-    };
-
-    // Nonaktifkan tombol kembali browser
-    history.pushState(null, null, location.href);
-    window.onpopstate = function () {
-        history.go(1);
-    };
-
-    // Nonaktifkan klik kanan
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
+    // Setup exam security and fullscreen
+    document.addEventListener('DOMContentLoaded', async () => {
+      await ExamSecurity.setup();
+      await FullscreenManager.setupFullscreenListeners();
+      await FullscreenManager.enable();
     });
-
-    // Nonaktifkan shortcut keyboard
-    document.addEventListener('keydown', function(e) {
-        // Mencegah Alt+Tab, Alt+F4, Ctrl+W, dll
-        if ((e.ctrlKey && e.key === 'w') || 
-            (e.altKey && e.key === 'Tab') ||
-            (e.altKey && e.key === 'F4') ||
-            (e.key === 'F11') ||
-            (e.ctrlKey && e.key === 'r') ||
-            (e.ctrlKey && e.key === 'R')) {
-            e.preventDefault();
-            return false;
-        }
-    });
-
-    // Deteksi perpindahan tab/window
-    document.addEventListener('visibilitychange', function() {
-      if (document.visibilityState !== 'visible') {
-        alert('Mohon jangan berpindah tab/window selama ujian berlangsung!');
-      }
-    });
-
-    // Aktifkan fullscreen saat halaman dimuat
-    window.onload = enableFullscreen;
 
     // Hitung mundur waktu ujian
     const endTime = new Date('<%= ujian.waktu_selesai %>').getTime();
