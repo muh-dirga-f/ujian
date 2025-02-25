@@ -59,10 +59,7 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
     });
 });
 
-router.get('/jadwal-ujian', (req, res) => {
-    if (!req.session.user || req.session.user.type !== 'siswa') {
-        return res.redirect('/');
-    }
+router.get('/jadwal-ujian', checkAuth, checkUserType('siswa'), (req, res) => {
 
     db.all(`
       SELECT u.id_ujian, u.judul_ujian, u.waktu_mulai, u.waktu_selesai,
