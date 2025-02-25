@@ -228,7 +228,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
     // Ambil data ujian dan siswa
     db.get(`
         SELECT u.judul_ujian, u.waktu_mulai, m.nama_mapel, k.kelas, k.minor_kelas,
-               s.nama as nama_siswa, s.nis, sk.nama_sekolah
+               s.fullname as nama_siswa, s.nis, sk.nama_sekolah
         FROM ujian u
         JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
         JOIN kelas k ON u.id_kelas = k.id_kelas
