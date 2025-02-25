@@ -4,10 +4,37 @@ const db = require('../config/database');
 const { checkAuth, checkUserType } = require('../middleware/auth');
 
 // Siswa dashboard
-router.get('/dashboard', checkAuth, checkUserType('siswa'), (req, res) => {
+router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => {
     if (!req.session.user || req.session.user.type !== 'siswa') {
         return res.redirect('/');
     }
+
+    // Cek apakah ada ujian yang sedang aktif
+    const now = new Date();
+    db.get(`
+        SELECT u.id_ujian 
+        FROM ujian u
+        JOIN kelas k ON u.id_kelas = k.id_kelas
+        JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
+        WHERE ks.nis = ? 
+        AND u.waktu_mulai <= ?
+        AND u.waktu_selesai >= ?
+        AND NOT EXISTS (
+            SELECT 1 FROM ujian_siswa us 
+            WHERE us.id_ujian = u.id_ujian 
+            AND us.nis = ?
+            AND us.status = 'selesai'
+        )
+        LIMIT 1
+    `, [req.session.user.username, now, now, req.session.user.username], (err, activeExam) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+        }
+
+        if (activeExam) {
+            return res.redirect(`/siswa/ujian/${activeExam.id_ujian}`);
+        }
     db.get(`
       SELECT ks.*, s.nama_sekolah
       FROM kelas_siswa ks
@@ -46,7 +73,7 @@ router.get('/jadwal-ujian', (req, res) => {
     });
 });
 
-router.get('/nilai', (req, res) => {
+router.get('/nilai', checkAuth, checkUserType('siswa'), (req, res) => {
     if (!req.session.user || req.session.user.type !== 'siswa') {
         return res.redirect('/');
     }
@@ -181,6 +208,45 @@ router.post('/ujian/:id/jawab', (req, res) => {
 });
 
 // Rute untuk menyelesaikan ujian
+// Rute untuk mengunduh hasil ujian
+router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) => {
+    const ujianId = req.params.id;
+    const nis = req.session.user.username;
+
+    db.all(`
+        SELECT s.soal, s.jenis_soal, s.pilihan_ganda, s.kunci_jawaban,
+               js.jawaban, 
+               CASE WHEN js.jawaban = s.kunci_jawaban THEN 1 ELSE 0 END as is_correct
+        FROM soal s
+        LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
+        WHERE s.id_ujian = ?
+    `, [nis, ujianId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+        }
+
+        let content = 'HASIL UJIAN\n\n';
+        results.forEach((row, index) => {
+            content += `Soal ${index + 1}: ${row.soal}\n`;
+            if (row.jenis_soal === 'pilihan_ganda') {
+                const options = JSON.parse(row.pilihan_ganda);
+                content += `Pilihan Jawaban:\n`;
+                Object.entries(options).forEach(([key, value]) => {
+                    content += `${key}. ${value}\n`;
+                });
+            }
+            content += `Jawaban Anda: ${row.jawaban || '-'}\n`;
+            content += `Kunci Jawaban: ${row.kunci_jawaban}\n`;
+            content += `Status: ${row.is_correct ? 'Benar' : 'Salah'}\n\n`;
+        });
+
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', `attachment; filename=hasil-ujian-${ujianId}.txt`);
+        res.send(content);
+    });
+});
+
 router.post('/ujian/:id/selesai', (req, res) => {
     if (!req.session.user || req.session.user.type !== 'siswa') {
         return res.status(403).json({ error: 'Unauthorized' });
