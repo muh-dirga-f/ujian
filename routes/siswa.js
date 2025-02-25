@@ -410,7 +410,9 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                     <div class="results">
                         <h3>Hasil Akhir:</h3>
                         <p>Total Soal: ${totalSoal}</p>
-                        <p>Total Nilai Maksimum: ${totalNilaiMaksimum}</p>
+                        <p>Total Jawaban Benar: ${results.filter(r => 
+                            r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban
+                        ).length}</p>
                         <p>Total Nilai Didapat: ${totalNilaiDidapat}</p>
                         <p class="${nilai >= 70 ? 'correct' : 'incorrect'}">
                             Nilai Akhir: ${nilai.toFixed(2)}
