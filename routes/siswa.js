@@ -282,6 +282,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
             console.log('Debug nilai:', {
                 totalNilaiMaksimum,
                 totalNilaiDidapat,
+                nilai,
                 results: results.map(r => ({
                     jenis: r.jenis_soal,
                     bobot: r.bobot_nilai,
@@ -290,10 +291,6 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                     benar: r.jawaban === r.kunci_jawaban
                 }))
             });
-            
-            // Hitung nilai akhir (skala 100)
-            const nilai = totalNilaiMaksimum > 0 ? 
-                (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
             const htmlContent = `
                 <!DOCTYPE html>
