@@ -455,17 +455,49 @@ router.post('/ujian/:id/selesai', (req, res) => {
 
     const ujianId = req.params.id;
 
-    // Tandai ujian sebagai selesai
-    db.run(`
-      INSERT INTO ujian_siswa (id_ujian, nis, status, waktu_selesai)
-      VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP)
-      ON CONFLICT(id_ujian, nis) DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP
-    `, [ujianId, req.session.user.username], (err) => {
+    // Hitung nilai akhir
+    db.all(`
+        SELECT s.*, js.jawaban 
+        FROM soal s
+        LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
+        WHERE s.id_ujian = ?
+    `, [req.session.user.username, ujianId], (err, results) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Server error' });
         }
-        res.json({ success: true });
+
+        let totalNilaiMaksimum = 0;
+        let totalNilaiDidapat = 0;
+
+        results.forEach(result => {
+            totalNilaiMaksimum += result.bobot_nilai || 0;
+            
+            if (result.jenis_soal === 'pilihan_ganda') {
+                if (result.jawaban === result.kunci_jawaban) {
+                    totalNilaiDidapat += result.bobot_nilai || 0;
+                }
+            } else if (result.jenis_soal === 'essay' && result.jawaban) {
+                totalNilaiDidapat += result.bobot_nilai || 0;
+            }
+        });
+
+        const nilaiAkhir = totalNilaiMaksimum > 0 ? 
+            (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
+
+        // Tandai ujian sebagai selesai dan simpan nilai
+        db.run(`
+            INSERT INTO ujian_siswa (id_ujian, nis, status, waktu_selesai, nilai_total)
+            VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP, ?)
+            ON CONFLICT(id_ujian, nis) 
+            DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP, nilai_total = ?
+        `, [ujianId, req.session.user.username, nilaiAkhir, nilaiAkhir], (err) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ error: 'Server error' });
+            }
+            res.json({ success: true });
+        });
     });
 });
 
