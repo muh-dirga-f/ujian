@@ -14,35 +14,74 @@ router.get('/', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    const { username, password, userType } = req.body;
-    let table, query, param;
+    const { username, password } = req.body;
+    
+    // Cek di tabel admin
+    db.get('SELECT *, "admin" as userType FROM admin WHERE username = ?', [username], (err, admin) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Server error');
+        }
+        
+        // Cek di tabel admin_sekolah
+        if (!admin) {
+            db.get('SELECT *, "admin_sekolah" as userType FROM admin_sekolah WHERE username = ?', [username], (err, adminSekolah) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Server error');
+                }
+                
+                // Cek di tabel guru
+                if (!adminSekolah) {
+                    db.get('SELECT *, "guru" as userType FROM guru WHERE username = ?', [username], (err, guru) => {
+                        if (err) {
+                            console.error(err);
+                            return res.status(500).send('Server error');
+                        }
+                        
+                        // Cek di tabel siswa
+                        if (!guru) {
+                            db.get('SELECT *, "siswa" as userType FROM siswa WHERE nis = ?', [username], (err, siswa) => {
+                                if (err) {
+                                    console.error(err);
+                                    return res.status(500).send('Server error');
+                                }
+                                
+                                if (!siswa) {
+                                    return res.status(401).send('Username/NIS atau password salah');
+                                }
+                                
+                                handleLogin(siswa, password, req, res);
+                            });
+                        } else {
+                            handleLogin(guru, password, req, res);
+                        }
+                    });
+                } else {
+                    handleLogin(adminSekolah, password, req, res);
+                }
+            });
+        } else {
+            handleLogin(admin, password, req, res);
+        }
+    });
+});
 
-    switch (userType) {
-        case 'guru':
-            table = 'guru';
-            query = `SELECT * FROM ${table} WHERE username = ?`;
-            param = username;
-            break;
-        case 'admin':
-            table = 'admin';
-            query = `SELECT * FROM ${table} WHERE username = ?`;
-            param = username;
-            break;
-        case 'admin_sekolah':
-            table = 'admin_sekolah';
-            query = `SELECT * FROM ${table} WHERE username = ?`;
-            param = username;
-            break;
-        case 'siswa':
-            table = 'siswa';
-            query = `SELECT * FROM ${table} WHERE nis = ?`;
-            param = username;
-            break;
-        default:
-            return res.status(400).send('Invalid user type');
+function handleLogin(user, password, req, res) {
+    if (password !== user.password) {
+        return res.status(401).send('Username/NIS atau password salah');
     }
 
-    db.get(query, [param], (err, row) => {
+    req.session.user = {
+        id: user.id_guru || user.id_admin || user.id_admin_sekolah || user.id_siswa,
+        username: user.username || user.nis,
+        fullname: user.fullname,
+        type: user.userType,
+        id_sekolah: user.id_sekolah
+    };
+    req.session.isLoggedIn = true;
+    res.redirect(`/${user.userType}/dashboard`);
+}
         if (err) {
             console.error(err);
             return res.status(500).send('Server error');
