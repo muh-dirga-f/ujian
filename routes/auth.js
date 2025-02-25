@@ -82,30 +82,6 @@ function handleLogin(user, password, req, res) {
     req.session.isLoggedIn = true;
     res.redirect(`/${user.userType}/dashboard`);
 }
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Server error');
-        }
-
-        if (!row) {
-            return res.status(401).send('Username atau password salah');
-        }
-
-        if (password === row.password) {
-            req.session.user = {
-                id: row.id_guru || row.id_admin || row.id_admin_sekolah || row.id_siswa,
-                username: row.username || row.nis,
-                fullname: row.fullname,
-                type: userType,
-                id_sekolah: row.id_sekolah
-            };
-            req.session.isLoggedIn = true;
-            res.redirect(`/${userType}/dashboard`);
-        } else {
-            res.status(401).send('Username/NIS atau password salah');
-        }
-    });
-});
 
 router.post('/register', (req, res) => {
     const { fullname, nis, password, id_sekolah } = req.body;
