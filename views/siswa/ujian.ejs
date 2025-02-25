@@ -106,19 +106,15 @@
     // Aktifkan mode fullscreen saat memulai ujian
     async function enableFullscreen() {
       try {
-        // Chrome Fullscreen API
-        const elem = document.documentElement;
-        
-        // Cek apakah browser mendukung mode fullscreen
-        if (elem.requestFullscreen) {
-          await elem.requestFullscreen();
-        } else if (elem.webkitRequestFullscreen) { // Chrome, Safari
-          await elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-        } else if (elem.mozRequestFullScreen) { // Firefox
-          await elem.mozRequestFullScreen();
-        } else if (elem.msRequestFullscreen) { // IE/Edge
-          await elem.msRequestFullscreen();
-        }
+        document.addEventListener("click", function() {
+          var el = document.documentElement;
+          var rfs = el.requestFullscreen
+            || el.webkitRequestFullScreen
+            || el.mozRequestFullScreen
+            || el.msRequestFullscreen;
+          
+          rfs.call(el);
+        });
 
         // Sembunyikan navigasi setelah fullscreen aktif
         document.querySelector('.main-header').style.display = 'none';
