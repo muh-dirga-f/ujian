@@ -243,8 +243,12 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
         // Ambil soal dan jawaban
         db.all(`
             SELECT s.soal, s.jenis_soal, s.pilihan_ganda, s.kunci_jawaban,
-                   js.jawaban, 
-                   CASE WHEN js.jawaban = s.kunci_jawaban THEN 1 ELSE 0 END as is_correct
+                   js.jawaban,
+                   CASE 
+                     WHEN s.jenis_soal = 'pilihan_ganda' AND js.jawaban = s.kunci_jawaban THEN 1
+                     WHEN s.jenis_soal = 'essay' AND js.jawaban IS NOT NULL THEN 1
+                     ELSE 0 
+                   END as is_correct
             FROM soal s
             LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
             WHERE s.id_ujian = ?
@@ -257,8 +261,24 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
 
             // Generate HTML content
             const totalSoal = results.length;
-            const benar = results.filter(r => r.is_correct).length;
-            const nilai = (benar / totalSoal) * 100;
+            // Hitung nilai berdasarkan jenis soal
+            const nilaiPG = results
+                .filter(r => r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban)
+                .length;
+            
+            const totalPG = results.filter(r => r.jenis_soal === 'pilihan_ganda').length;
+            const totalEssay = results.filter(r => r.jenis_soal === 'essay').length;
+            
+            // Nilai akhir: 60% PG + 40% Essay jika ada essay, 100% PG jika tidak ada essay
+            let nilai;
+            if (totalEssay > 0) {
+                const nilaiEssayPerSoal = results
+                    .filter(r => r.jenis_soal === 'essay' && r.jawaban)
+                    .length;
+                nilai = ((nilaiPG / totalPG) * 60) + ((nilaiEssayPerSoal / totalEssay) * 40);
+            } else {
+                nilai = (nilaiPG / totalPG) * 100;
+            }
 
             const htmlContent = `
                 <!DOCTYPE html>
