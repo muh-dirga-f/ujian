@@ -10,15 +10,15 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
     }
 
     // Cek apakah ada ujian yang sedang aktif
-    const now = new Date();
+    const now = new Date().toISOString();
     db.get(`
-        SELECT u.id_ujian 
+        SELECT u.id_ujian, u.judul_ujian
         FROM ujian u
         JOIN kelas k ON u.id_kelas = k.id_kelas
         JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
         WHERE ks.nis = ? 
-        AND u.waktu_mulai <= ?
-        AND u.waktu_selesai >= ?
+        AND datetime(u.waktu_mulai) <= datetime(?)
+        AND datetime(u.waktu_selesai) >= datetime(?)
         AND NOT EXISTS (
             SELECT 1 FROM ujian_siswa us 
             WHERE us.id_ujian = u.id_ujian 
@@ -32,10 +32,17 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
             return res.status(500).send('Server error');
         }
 
+        if (err) {
+            console.error('Error checking active exam:', err);
+            return res.status(500).send('Server error');
+        }
+
         if (activeExam) {
+            console.log('Active exam found:', activeExam);
             return res.redirect(`/siswa/ujian/${activeExam.id_ujian}`);
         }
 
+        // Jika tidak ada ujian aktif, tampilkan dashboard
         db.get(`
           SELECT ks.*, s.nama_sekolah
           FROM kelas_siswa ks
@@ -49,19 +56,6 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
             }
             res.render('siswa/dashboard', { user: req.session.user, kelas: row });
         });
-    });
-    db.get(`
-      SELECT ks.*, s.nama_sekolah
-      FROM kelas_siswa ks
-      JOIN siswa si ON ks.nis = si.nis
-      JOIN sekolah s ON si.id_sekolah = s.id_sekolah
-      WHERE ks.nis = ?
-    `, [req.session.user.username], (err, row) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Server error');
-        }
-        res.render('siswa/dashboard', { user: req.session.user, kelas: row });
     });
 });
 
