@@ -16,12 +16,12 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
         FROM ujian u
         JOIN kelas k ON u.id_kelas = k.id_kelas
         JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
-        WHERE ks.nis = ? 
+        WHERE ks.nis = ?
         AND datetime(u.waktu_mulai) <= datetime(?)
         AND datetime(u.waktu_selesai) >= datetime(?)
         AND NOT EXISTS (
-            SELECT 1 FROM ujian_siswa us 
-            WHERE us.id_ujian = u.id_ujian 
+            SELECT 1 FROM ujian_siswa us
+            WHERE us.id_ujian = u.id_ujian
             AND us.nis = ?
             AND us.status = 'selesai'
         )
@@ -85,7 +85,7 @@ router.get('/nilai', checkAuth, checkUserType('siswa'), (req, res) => {
     }
 
     db.all(`
-      SELECT u.id_ujian, u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas, 
+      SELECT u.id_ujian, u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas,
              nu.nilai_total, nu.status, u.waktu_mulai
       FROM nilai_ujian nu
       JOIN ujian u ON nu.id_ujian = u.id_ujian
@@ -242,12 +242,12 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
 
         // Ambil soal dan jawaban
         db.all(`
-            SELECT s.soal, s.jenis_soal, s.pilihan_ganda, s.kunci_jawaban,
+            SELECT s.soal, s.jenis_soal, s.pilihan_ganda, s.kunci_jawaban, s.nilai,
                    js.jawaban,
-                   CASE 
+                   CASE
                      WHEN s.jenis_soal = 'pilihan_ganda' AND js.jawaban = s.kunci_jawaban THEN 1
                      WHEN s.jenis_soal = 'essay' AND js.jawaban IS NOT NULL THEN 1
-                     ELSE 0 
+                     ELSE 0
                    END as is_correct
             FROM soal s
             LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
@@ -261,22 +261,23 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
 
             // Generate HTML content
             const totalSoal = results.length;
-            
+
             // Hitung total nilai berdasarkan bobot soal
             let totalNilaiMaksimum = 0;
             let totalNilaiDidapat = 0;
-            
+
             results.forEach(result => {
+                console.log('nilai' + result)
                 const bobotSoal = result.nilai || 0;
                 totalNilaiMaksimum += bobotSoal;
-                
+
                 if (result.jenis_soal === 'pilihan_ganda' && result.jawaban === result.kunci_jawaban) {
                     totalNilaiDidapat += bobotSoal;
                 }
             });
 
             // Hitung nilai akhir (skala 100)
-            const nilai = totalNilaiMaksimum > 0 ? 
+            const nilai = totalNilaiMaksimum > 0 ?
                 (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
             console.log('Debug nilai:', {
@@ -285,7 +286,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                 nilai,
                 results: results.map(r => ({
                     jenis: r.jenis_soal,
-                    bobot: r.bobot_nilai,
+                    bobot: r.nilai,
                     jawaban: r.jawaban,
                     kunci: r.kunci_jawaban,
                     benar: r.jawaban === r.kunci_jawaban
@@ -300,15 +301,15 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                     <style>
                         body { font-family: Arial, sans-serif; margin: 40px; }
                         .header { text-align: center; margin-bottom: 30px; }
-                        .info-section { 
-                            display: flex; 
+                        .info-section {
+                            display: flex;
                             justify-content: space-between;
                             border-top: 1px solid #ccc;
                             border-bottom: 1px solid #ccc;
                             padding: 20px 0;
                             margin-bottom: 30px;
                         }
-                        .question { 
+                        .question {
                             margin-bottom: 30px;
                             padding: 15px;
                             border: 1px solid #eee;
@@ -316,7 +317,7 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                         }
                         .options { margin-left: 20px; }
                         .option { margin: 5px 0; }
-                        .student-answer { 
+                        .student-answer {
                             margin: 10px 0;
                             padding: 10px;
                             background-color: #f8f9fa;
@@ -326,21 +327,21 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                             margin-left: 20px;
                             margin-top: 10px;
                         }
-                        .correct { 
+                        .correct {
                             color: green;
                             border-left-color: green !important;
                         }
-                        .incorrect { 
+                        .incorrect {
                             color: red;
                             border-left-color: red !important;
                         }
-                        .answer-key { 
+                        .answer-key {
                             margin: 10px 0;
                             padding: 10px;
                             background-color: #e9ecef;
                             border-left: 4px solid #28a745;
                         }
-                        .results { 
+                        .results {
                             margin-top: 30px;
                             padding: 20px;
                             background-color: #f9f9f9;
@@ -366,11 +367,11 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                             <p><strong>Mata Pelajaran:</strong> ${ujian.nama_mapel}</p>
                             <p><strong>Kelas:</strong> ${ujian.kelas} ${ujian.minor_kelas}</p>
                             <p><strong>Tanggal:</strong> ${new Date(ujian.waktu_mulai).toLocaleDateString('id-ID', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            })}</p>
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })}</p>
                         </div>
                         <div class="student-info">
                             <p><strong>Nama:</strong> ${ujian.nama_siswa}</p>
@@ -382,8 +383,8 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                         <div class="question">
                             <p><strong>Soal ${index + 1}:</strong></p>
                             <p>${row.soal}</p>
-                            ${row.jenis_soal === 'pilihan_ganda' 
-                                ? `<div class="options">
+                            ${row.jenis_soal === 'pilihan_ganda'
+                    ? `<div class="options">
                                     ${Object.entries(JSON.parse(row.pilihan_ganda)).map(([key, value]) => `
                                         <p class="option ${key === row.jawaban ? (key === row.kunci_jawaban ? 'correct' : 'incorrect') : ''} ${key === row.kunci_jawaban ? 'answer-key' : ''}">
                                             ${key}. ${value}
@@ -396,13 +397,13 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                                         <strong>Kunci Jawaban:</strong> ${row.kunci_jawaban}. ${JSON.parse(row.pilihan_ganda)[row.kunci_jawaban]}
                                     </p>
                                    </div>`
-                                : `<div class="essay-answer">
+                    : `<div class="essay-answer">
                                     <p class="student-answer">
                                         <strong>Jawaban Anda:</strong><br>
                                         ${row.jawaban || '(Tidak dijawab)'}
                                     </p>
                                    </div>`
-                            }
+                }
                         </div>
                     `).join('')}
 
@@ -464,7 +465,7 @@ router.post('/ujian/:id/selesai', (req, res) => {
 
     // Hitung nilai akhir
     db.all(`
-        SELECT s.*, js.jawaban 
+        SELECT s.*, js.jawaban
         FROM soal s
         LEFT JOIN jawaban_siswa js ON s.id_soal = js.id_soal AND js.nis = ?
         WHERE s.id_ujian = ?
@@ -477,18 +478,18 @@ router.post('/ujian/:id/selesai', (req, res) => {
         // Hitung total nilai berdasarkan bobot soal
         let totalNilaiMaksimum = 0;
         let totalNilaiDidapat = 0;
-        
+
         results.forEach(result => {
             const bobotSoal = result.nilai || 0;
             totalNilaiMaksimum += bobotSoal;
-            
+
             if (result.jenis_soal === 'pilihan_ganda' && result.jawaban === result.kunci_jawaban) {
                 totalNilaiDidapat += bobotSoal;
             }
         });
 
         // Hitung nilai akhir (skala 100)
-        const nilaiAkhir = totalNilaiMaksimum > 0 ? 
+        const nilaiAkhir = totalNilaiMaksimum > 0 ?
             (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
 
         console.log('Debug nilai akhir:', {
@@ -508,7 +509,7 @@ router.post('/ujian/:id/selesai', (req, res) => {
         db.run(`
             INSERT INTO ujian_siswa (id_ujian, nis, status, waktu_selesai, nilai_total)
             VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP, ?)
-            ON CONFLICT(id_ujian, nis) 
+            ON CONFLICT(id_ujian, nis)
             DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP, nilai_total = ?
         `, [ujianId, req.session.user.username, nilaiAkhir, nilaiAkhir], (err) => {
             if (err) {
