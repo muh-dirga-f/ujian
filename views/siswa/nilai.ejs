@@ -57,7 +57,7 @@
                           <td><%= new Date(nilai.waktu_mulai).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></td>
                           <td><%= nilai.nilai_total %></td>
                           <td>
-                            <a href="/siswa/nilai/download/<%= nilai.id_ujian %>" class="btn btn-sm btn-info">
+                            <a href="/siswa/nilai/download/<%= nilai.id_ujian || nilai.id_ujian_siswa %>" class="btn btn-sm btn-info">
                               <i class="fas fa-download"></i> Unduh Detail
                             </a>
                           </td>
