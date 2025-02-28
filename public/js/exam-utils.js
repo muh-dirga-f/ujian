@@ -43,7 +43,7 @@ const FullscreenManager = {
   },
 
   showNavigationElements() {
-    document.querySelector('.main-header').style.display = 'block';
+    document.querySelector('.main-header').style.display = 'flex';
     document.querySelector('.main-sidebar').style.display = 'block';
     document.querySelector('.main-footer').style.display = 'block';
     document.querySelector('.content-wrapper').style.marginLeft = '250px';
@@ -78,10 +78,10 @@ const FullscreenManager = {
           return;
         }
 
-        if (!document.fullscreenElement && 
-            !document.webkitFullscreenElement && 
-            !document.mozFullscreenElement && 
-            !document.msFullscreenElement) {
+        if (!document.fullscreenElement &&
+          !document.webkitFullscreenElement &&
+          !document.mozFullscreenElement &&
+          !document.msFullscreenElement) {
           NotificationManager.show('Mohon tetap dalam mode fullscreen selama ujian berlangsung!');
           this.enable();
         }
@@ -123,12 +123,12 @@ const ExamSecurity = {
 
     // Nonaktifkan shortcut keyboard
     document.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey && e.key === 'w') || 
-          (e.altKey && e.key === 'Tab') ||
-          (e.altKey && e.key === 'F4') ||
-          (e.key === 'F11') ||
-          (e.ctrlKey && e.key === 'r') ||
-          (e.ctrlKey && e.key === 'R')) {
+      if ((e.ctrlKey && e.key === 'w') ||
+        (e.altKey && e.key === 'Tab') ||
+        (e.altKey && e.key === 'F4') ||
+        (e.key === 'F11') ||
+        (e.ctrlKey && e.key === 'r') ||
+        (e.ctrlKey && e.key === 'R')) {
         e.preventDefault();
         return false;
       }

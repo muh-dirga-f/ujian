@@ -412,15 +412,14 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                         <p>Total Jawaban Benar: ${results.filter(r =>
                     r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban
                 ).length}</p>
-                        <p>Total Nilai Didapat: ${totalNilaiDidapat}</p>
                         <p class="${totalNilaiDidapat >= (totalNilaiMaksimum * 0.7) ? 'correct' : 'incorrect'}">
                             Nilai Akhir: ${totalNilaiDidapat}
                         </p>
                     </div>
 
-                    <div class="footer">
+                    <!--div class="footer">
                         Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah
-                    </div>
+                    </div-->
                 </body>
                 </html>
             `;
@@ -489,17 +488,17 @@ router.post('/ujian/:id/selesai', (req, res) => {
             }
         });
 
-        console.log('Debug nilai akhir:', {
-            totalNilaiMaksimum,
-            totalNilaiDidapat,
-            results: results.map(r => ({
-                jenis: r.jenis_soal,
-                nilai: r.nilai,
-                jawaban: r.jawaban,
-                kunci: r.kunci_jawaban,
-                benar: r.jawaban === r.kunci_jawaban
-            }))
-        });
+        // console.log('Debug nilai akhir:', {
+        //     totalNilaiMaksimum,
+        //     totalNilaiDidapat,
+        //     results: results.map(r => ({
+        //         jenis: r.jenis_soal,
+        //         nilai: r.nilai,
+        //         jawaban: r.jawaban,
+        //         kunci: r.kunci_jawaban,
+        //         benar: r.jawaban === r.kunci_jawaban
+        //     }))
+        // });
 
         // Tandai ujian sebagai selesai dan simpan nilai
         db.run(`
