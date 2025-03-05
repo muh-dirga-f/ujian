@@ -556,16 +556,29 @@ router.post('/ujian/:id/selesai', (req, res) => {
 
         // Tandai ujian sebagai selesai dan simpan nilai
         db.run(`
-            INSERT INTO ujian_siswa (id_ujian, nis, status, waktu_selesai, nilai_total)
-            VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP, ?)
+            INSERT INTO ujian_siswa (id_ujian, nis, status, waktu_selesai)
+            VALUES (?, ?, 'selesai', CURRENT_TIMESTAMP)
             ON CONFLICT(id_ujian, nis)
-            DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP, nilai_total = ?
-        `, [ujianId, req.session.user.username, totalNilaiDidapat, totalNilaiDidapat], (err) => {
+            DO UPDATE SET status = 'selesai', waktu_selesai = CURRENT_TIMESTAMP
+        `, [ujianId, req.session.user.username], (err) => {
             if (err) {
                 console.error(err);
                 return res.status(500).json({ error: 'Server error' });
             }
-            res.json({ success: true });
+            
+            // Simpan nilai di tabel nilai_ujian
+            db.run(`
+                INSERT INTO nilai_ujian (id_ujian, nis, nilai_total, status)
+                VALUES (?, ?, ?, 'selesai')
+                ON CONFLICT(id_ujian, nis)
+                DO UPDATE SET nilai_total = ?, status = 'selesai'
+            `, [ujianId, req.session.user.username, totalNilaiDidapat, totalNilaiDidapat], (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({ error: 'Server error' });
+                }
+                res.json({ success: true });
+            });
         });
     });
 });
