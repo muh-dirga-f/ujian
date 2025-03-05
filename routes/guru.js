@@ -22,19 +22,66 @@ router.get('/ujian', checkAuth, checkUserType('guru'), (req, res) => {
     if (!req.session.user || req.session.user.type !== 'guru') {
         return res.redirect('/');
     }
-    db.all(`
-      SELECT u.id_ujian, u.judul_ujian, k.kelas, k.minor_kelas, m.nama_mapel, u.waktu_mulai, u.waktu_selesai
-      FROM ujian u
-      JOIN kelas k ON u.id_kelas = k.id_kelas
-      JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
-      WHERE m.id_guru = ?
-      ORDER BY u.waktu_mulai DESC
-    `, [req.session.user.id], (err, rows) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send('Server error');
-        }
-        res.render('guru/ujian', { user: req.session.user, ujianList: rows });
+
+    const filterKelas = req.query.kelas || '';
+    
+    // Dapatkan daftar kelas untuk filter
+    const getKelas = new Promise((resolve, reject) => {
+        db.all(`
+            SELECT DISTINCT k.id_kelas, k.kelas, k.minor_kelas
+            FROM kelas k
+            JOIN mata_pelajaran m ON k.id_kelas = m.id_kelas
+            WHERE m.id_guru = ?
+            ORDER BY k.kelas, k.minor_kelas
+        `, [req.session.user.id], (err, kelasList) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve(kelasList);
+        });
+    });
+    
+    // Buat query untuk ujian dengan filter
+    let query = `
+        SELECT u.id_ujian, u.judul_ujian, k.kelas, k.minor_kelas, m.nama_mapel, u.waktu_mulai, u.waktu_selesai,
+               k.id_kelas
+        FROM ujian u
+        JOIN kelas k ON u.id_kelas = k.id_kelas
+        JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+        WHERE m.id_guru = ?
+    `;
+    
+    const queryParams = [req.session.user.id];
+    
+    if (filterKelas) {
+        query += ' AND k.id_kelas = ?';
+        queryParams.push(filterKelas);
+    }
+    
+    query += ' ORDER BY u.waktu_mulai DESC';
+    
+    // Jalankan kedua query secara paralel
+    Promise.all([
+        getKelas,
+        new Promise((resolve, reject) => {
+            db.all(query, queryParams, (err, rows) => {
+                if (err) reject(err);
+                else resolve(rows);
+            });
+        })
+    ])
+    .then(([kelasList, ujianList]) => {
+        res.render('guru/ujian', { 
+            user: req.session.user, 
+            ujianList: ujianList,
+            kelasList: kelasList,
+            selectedKelas: filterKelas
+        });
+    })
+    .catch(err => {
+        console.error(err);
+        res.status(500).send('Server error');
     });
 });
 
