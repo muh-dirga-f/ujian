@@ -116,21 +116,53 @@ router.get('/nilai', checkAuth, checkUserType('siswa'), (req, res) => {
         return res.redirect('/');
     }
 
+    const mapelFilter = req.query.mapel || '';
+
+    // Ambil daftar mata pelajaran untuk filter
     db.all(`
-      SELECT u.id_ujian, u.judul_ujian, m.nama_mapel, k.kelas, k.minor_kelas,
-             nu.nilai_total, nu.status, u.waktu_mulai
-      FROM nilai_ujian nu
-      JOIN ujian u ON nu.id_ujian = u.id_ujian
-      JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
-      JOIN kelas k ON u.id_kelas = k.id_kelas
+      SELECT DISTINCT m.id_mapel, m.nama_mapel
+      FROM mata_pelajaran m
+      JOIN ujian u ON m.id_mapel = u.id_mapel
+      JOIN nilai_ujian nu ON u.id_ujian = nu.id_ujian
       WHERE nu.nis = ?
-      ORDER BY u.waktu_mulai DESC
-    `, [req.session.user.username], (err, rows) => {
+    `, [req.session.user.username], (err, mapelList) => {
         if (err) {
             console.error(err);
             return res.status(500).send('Server error');
         }
-        res.render('siswa/nilai', { user: req.session.user, nilaiUjian: rows });
+
+        // Buat query dengan filter
+        let query = `
+          SELECT u.id_ujian, u.judul_ujian, m.nama_mapel, m.id_mapel, k.kelas, k.minor_kelas,
+                 nu.nilai_total, nu.status, u.waktu_mulai
+          FROM nilai_ujian nu
+          JOIN ujian u ON nu.id_ujian = u.id_ujian
+          JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
+          JOIN kelas k ON u.id_kelas = k.id_kelas
+          WHERE nu.nis = ?
+        `;
+        
+        const params = [req.session.user.username];
+        
+        if (mapelFilter) {
+            query += ` AND m.id_mapel = ?`;
+            params.push(mapelFilter);
+        }
+        
+        query += ` ORDER BY u.waktu_mulai DESC`;
+        
+        db.all(query, params, (err, rows) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Server error');
+            }
+            res.render('siswa/nilai', { 
+                user: req.session.user, 
+                nilaiUjian: rows,
+                mapelList: mapelList,
+                currentMapel: mapelFilter
+            });
+        });
     });
 });
 
