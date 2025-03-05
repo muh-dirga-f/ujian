@@ -61,7 +61,6 @@ router.get('/dashboard', checkAuth, checkUserType('siswa'), async (req, res) => 
 
 router.get('/jadwal-ujian', checkAuth, checkUserType('siswa'), (req, res) => {
     const mapelFilter = req.query.mapel || '';
-    const kelasFilter = req.query.kelas || '';
 
     // Ambil daftar mata pelajaran untuk filter
     db.all(`
@@ -77,57 +76,36 @@ router.get('/jadwal-ujian', checkAuth, checkUserType('siswa'), (req, res) => {
             return res.status(500).send('Server error');
         }
 
-        // Ambil daftar kelas untuk filter
-        db.all(`
-          SELECT DISTINCT k.kelas
-          FROM kelas k
-          JOIN ujian u ON k.id_kelas = u.id_kelas
+        // Buat query dengan filter
+        let query = `
+          SELECT u.id_ujian, u.judul_ujian, u.waktu_mulai, u.waktu_selesai,
+                 k.kelas, k.minor_kelas, m.nama_mapel, m.id_mapel
+          FROM ujian u
+          JOIN kelas k ON u.id_kelas = k.id_kelas
+          JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
           JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
           WHERE ks.nis = ?
-        `, [req.session.user.username], (err, kelasList) => {
+        `;
+        
+        const params = [req.session.user.username];
+        
+        if (mapelFilter) {
+            query += ` AND m.id_mapel = ?`;
+            params.push(mapelFilter);
+        }
+        
+        query += ` ORDER BY u.waktu_mulai ASC`;
+        
+        db.all(query, params, (err, rows) => {
             if (err) {
                 console.error(err);
                 return res.status(500).send('Server error');
             }
-
-            // Buat query dengan filter
-            let query = `
-              SELECT u.id_ujian, u.judul_ujian, u.waktu_mulai, u.waktu_selesai,
-                     k.kelas, k.minor_kelas, m.nama_mapel, m.id_mapel
-              FROM ujian u
-              JOIN kelas k ON u.id_kelas = k.id_kelas
-              JOIN mata_pelajaran m ON u.id_mapel = m.id_mapel
-              JOIN kelas_siswa ks ON k.kelas = ks.kelas AND k.minor_kelas = ks.kelas_minor
-              WHERE ks.nis = ?
-            `;
-            
-            const params = [req.session.user.username];
-            
-            if (mapelFilter) {
-                query += ` AND m.id_mapel = ?`;
-                params.push(mapelFilter);
-            }
-            
-            if (kelasFilter) {
-                query += ` AND k.kelas = ?`;
-                params.push(kelasFilter);
-            }
-            
-            query += ` ORDER BY u.waktu_mulai ASC`;
-            
-            db.all(query, params, (err, rows) => {
-                if (err) {
-                    console.error(err);
-                    return res.status(500).send('Server error');
-                }
-                res.render('siswa/jadwal-ujian', { 
-                    user: req.session.user, 
-                    jadwalUjian: rows,
-                    mapelList: mapelList,
-                    kelasList: kelasList,
-                    currentMapel: mapelFilter,
-                    currentKelas: kelasFilter
-                });
+            res.render('siswa/jadwal-ujian', { 
+                user: req.session.user, 
+                jadwalUjian: rows,
+                mapelList: mapelList,
+                currentMapel: mapelFilter
             });
         });
     });
