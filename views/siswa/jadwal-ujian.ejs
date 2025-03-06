@@ -44,6 +44,37 @@
                   <h3 class="card-title">Daftar Jadwal Ujian</h3>
                 </div>
                 <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label>Filter Judul Ujian:</label>
+                        <select id="filterJudul" class="form-control">
+                          <option value="">Semua Judul Ujian</option>
+                          <% 
+                            const uniqueJudul = [...new Set(jadwalUjian.map(item => item.judul_ujian))];
+                            uniqueJudul.forEach(function(judul) { 
+                          %>
+                            <option value="<%= judul %>"><%= judul %></option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group">
+                        <label>Filter Mata Pelajaran:</label>
+                        <select id="filterMapel" class="form-control">
+                          <option value="">Semua Mata Pelajaran</option>
+                          <% 
+                            const uniqueMapel = [...new Set(jadwalUjian.map(item => item.nama_mapel))];
+                            uniqueMapel.forEach(function(mapel) { 
+                          %>
+                            <option value="<%= mapel %>"><%= mapel %></option>
+                          <% }); %>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <table id="jadwalTable" class="table table-bordered table-striped">
                     <thead>
                       <tr>
@@ -113,7 +144,7 @@
   <script>
     $(function () {
       // Setup DataTables
-      $('#jadwalTable').DataTable({
+      const jadwalTable = $('#jadwalTable').DataTable({
         "responsive": true,
         "lengthChange": true,
         "autoWidth": false,
@@ -131,46 +162,19 @@
             "previous": "Sebelumnya"
           }
         },
-        "order": [[3, 'asc']], // Urutkan berdasarkan waktu mulai
-        "initComplete": function () {
-          // Tambahkan filter untuk judul ujian
-          this.api().columns(0).every(function () {
-            var column = this;
-            var select = $('<select class="form-control form-control-sm"><option value="">Semua Judul Ujian</option></select>')
-              .appendTo($(column.header()).empty())
-              .on('change', function () {
-                var val = $.fn.dataTable.util.escapeRegex(
-                  $(this).val()
-                );
-                column
-                  .search(val ? '^' + val + '$' : '', true, false)
-                  .draw();
-              });
-
-            column.data().unique().sort().each(function (d, j) {
-              select.append('<option value="' + d + '">' + d + '</option>');
-            });
-          });
-
-          // Tambahkan filter untuk mata pelajaran
-          this.api().columns(1).every(function () {
-            var column = this;
-            var select = $('<select class="form-control form-control-sm"><option value="">Semua Mata Pelajaran</option></select>')
-              .appendTo($(column.header()).empty())
-              .on('change', function () {
-                var val = $.fn.dataTable.util.escapeRegex(
-                  $(this).val()
-                );
-                column
-                  .search(val ? '^' + val + '$' : '', true, false)
-                  .draw();
-              });
-
-            column.data().unique().sort().each(function (d, j) {
-              select.append('<option value="' + d + '">' + d + '</option>');
-            });
-          });
-        }
+        "order": [[3, 'asc']] // Urutkan berdasarkan waktu mulai
+      });
+      
+      // Event listener untuk filter judul ujian
+      $('#filterJudul').on('change', function() {
+        const val = $.fn.dataTable.util.escapeRegex($(this).val());
+        jadwalTable.column(0).search(val ? '^' + val + '$' : '', true, false).draw();
+      });
+      
+      // Event listener untuk filter mata pelajaran
+      $('#filterMapel').on('change', function() {
+        const val = $.fn.dataTable.util.escapeRegex($(this).val());
+        jadwalTable.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
       });
     });
   </script>
