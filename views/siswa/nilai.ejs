@@ -48,15 +48,7 @@
                     <div class="col-md-5">
                       <div class="form-group">
                         <label>Filter Judul Ujian:</label>
-                        <select id="filterJudul" class="form-control">
-                          <option value="">Semua Judul Ujian</option>
-                          <% 
-                            const uniqueJudul = [...new Set(nilaiUjian.map(item => item.judul_ujian))];
-                            uniqueJudul.forEach(function(judul) { 
-                          %>
-                            <option value="<%= judul %>"><%= judul %></option>
-                          <% }); %>
-                        </select>
+                        <input type="text" id="filterJudul" class="form-control" placeholder="Masukkan judul ujian...">
                       </div>
                     </div>
                     <div class="col-md-5">
@@ -165,9 +157,8 @@
       });
       
       // Event listener untuk filter judul ujian
-      $('#filterJudul').on('change', function() {
-        const val = $.fn.dataTable.util.escapeRegex($(this).val());
-        nilaiTable.column(0).search(val ? '^' + val + '$' : '', true, false).draw();
+      $('#filterJudul').on('keyup', function() {
+        nilaiTable.column(0).search(this.value).draw();
       });
       
       // Event listener untuk filter mata pelajaran
