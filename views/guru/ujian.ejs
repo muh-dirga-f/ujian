@@ -46,6 +46,62 @@
                       </a>
                     </div>
                   </div>
+                  <div class="card-body">
+                    <div class="row mb-3">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label for="filterKelas">Filter Kelas:</label>
+                          <select id="filterKelas" class="form-control">
+                            <option value="">Semua Kelas</option>
+                            <% 
+                            // Membuat array unik untuk kelas
+                            const kelasSet = new Set();
+                            ujianList.forEach(ujian => {
+                              kelasSet.add(`${ujian.kelas} ${ujian.minor_kelas}`);
+                            });
+                            
+                            // Konversi Set ke Array dan urutkan
+                            const kelasList = Array.from(kelasSet).sort();
+                            
+                            // Tampilkan opsi
+                            kelasList.forEach(kelas => { %>
+                              <option value="<%= kelas %>"><%= kelas %></option>
+                            <% }); %>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label for="filterMapel">Filter Mata Pelajaran:</label>
+                          <select id="filterMapel" class="form-control">
+                            <option value="">Semua Mata Pelajaran</option>
+                            <% 
+                            // Membuat array unik untuk mapel
+                            const mapelSet = new Set();
+                            ujianList.forEach(ujian => {
+                              mapelSet.add(ujian.nama_mapel);
+                            });
+                            
+                            // Konversi Set ke Array dan urutkan
+                            const mapelList = Array.from(mapelSet).sort();
+                            
+                            // Tampilkan opsi
+                            mapelList.forEach(mapel => { %>
+                              <option value="<%= mapel %>"><%= mapel %></option>
+                            <% }); %>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label>&nbsp;</label>
+                          <button id="resetFilter" class="btn btn-secondary form-control">
+                            <i class="fas fa-sync"></i> Reset Filter
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div class="card-body table-responsive">
                     <table id="ujianTable" class="table table-hover text-nowrap">
                       <thead>
@@ -127,7 +183,8 @@
   
   <script>
     $(document).ready(function() {
-      $('#ujianTable').DataTable({
+      // Inisialisasi DataTable
+      const table = $('#ujianTable').DataTable({
         "paging": true,
         "lengthChange": true,
         "searching": true,
@@ -149,6 +206,67 @@
             "previous": "Sebelumnya"
           }
         }
+      });
+      
+      // Filter untuk kelas
+      $('#filterKelas').on('change', function() {
+        const selectedKelas = $(this).val();
+        
+        // Custom filtering function untuk kelas
+        $.fn.dataTable.ext.search.push(
+          function(settings, data, dataIndex) {
+            // Jika tidak ada filter yang dipilih, tampilkan semua data
+            if (!selectedKelas) {
+              return true;
+            }
+            
+            // Kolom kelas ada di indeks 2 (sesuai dengan tabel)
+            const kelas = data[2]; // Kelas X A, Kelas XI B, dll
+            
+            // Cek apakah kelas cocok dengan filter
+            return kelas.includes(selectedKelas);
+          }
+        );
+        
+        // Terapkan filter
+        table.draw();
+        
+        // Hapus fungsi filter setelah digunakan
+        $.fn.dataTable.ext.search.pop();
+      });
+      
+      // Filter untuk mata pelajaran
+      $('#filterMapel').on('change', function() {
+        const selectedMapel = $(this).val();
+        
+        // Custom filtering function untuk mapel
+        $.fn.dataTable.ext.search.push(
+          function(settings, data, dataIndex) {
+            // Jika tidak ada filter yang dipilih, tampilkan semua data
+            if (!selectedMapel) {
+              return true;
+            }
+            
+            // Kolom mapel ada di indeks 3 (sesuai dengan tabel)
+            const mapel = data[3];
+            
+            // Cek apakah mapel cocok dengan filter
+            return mapel === selectedMapel;
+          }
+        );
+        
+        // Terapkan filter
+        table.draw();
+        
+        // Hapus fungsi filter setelah digunakan
+        $.fn.dataTable.ext.search.pop();
+      });
+      
+      // Reset filter
+      $('#resetFilter').on('click', function() {
+        $('#filterKelas').val('');
+        $('#filterMapel').val('');
+        table.search('').columns().search('').draw();
       });
     });
   </script>
