@@ -212,61 +212,24 @@
       $('#filterKelas').on('change', function() {
         const selectedKelas = $(this).val();
         
-        // Custom filtering function untuk kelas
-        $.fn.dataTable.ext.search.push(
-          function(settings, data, dataIndex) {
-            // Jika tidak ada filter yang dipilih, tampilkan semua data
-            if (!selectedKelas) {
-              return true;
-            }
-            
-            // Kolom kelas ada di indeks 2 (sesuai dengan tabel)
-            const kelas = data[2]; // Kelas X A, Kelas XI B, dll
-            
-            // Cek apakah kelas cocok dengan filter
-            return kelas.includes(selectedKelas);
-          }
-        );
-        
-        // Terapkan filter
-        table.draw();
-        
-        // Hapus fungsi filter setelah digunakan
-        $.fn.dataTable.ext.search.pop();
+        // Gunakan fitur pencarian kolom DataTables
+        table.column(2).search(selectedKelas).draw();
       });
       
       // Filter untuk mata pelajaran
       $('#filterMapel').on('change', function() {
         const selectedMapel = $(this).val();
         
-        // Custom filtering function untuk mapel
-        $.fn.dataTable.ext.search.push(
-          function(settings, data, dataIndex) {
-            // Jika tidak ada filter yang dipilih, tampilkan semua data
-            if (!selectedMapel) {
-              return true;
-            }
-            
-            // Kolom mapel ada di indeks 3 (sesuai dengan tabel)
-            const mapel = data[3];
-            
-            // Cek apakah mapel cocok dengan filter
-            return mapel === selectedMapel;
-          }
-        );
-        
-        // Terapkan filter
-        table.draw();
-        
-        // Hapus fungsi filter setelah digunakan
-        $.fn.dataTable.ext.search.pop();
+        // Gunakan fitur pencarian kolom DataTables
+        table.column(3).search(selectedMapel).draw();
       });
       
       // Reset filter
       $('#resetFilter').on('click', function() {
         $('#filterKelas').val('');
         $('#filterMapel').val('');
-        table.search('').columns().search('').draw();
+        // Reset semua pencarian kolom
+        table.columns().search('').draw();
       });
     });
   </script>
