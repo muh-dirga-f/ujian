@@ -94,6 +94,12 @@
                       </div>
                       <div class="col-md-4">
                         <div class="form-group">
+                          <label for="filterJudul">Filter Judul Ujian:</label>
+                          <input type="text" id="filterJudul" class="form-control" placeholder="Cari judul ujian...">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="form-group">
                           <label>&nbsp;</label>
                           <button id="resetFilter" class="btn btn-secondary form-control">
                             <i class="fas fa-sync"></i> Reset Filter
@@ -224,10 +230,19 @@
         table.column(3).search(selectedMapel).draw();
       });
       
+      // Filter untuk judul ujian
+      $('#filterJudul').on('keyup', function() {
+        const judulUjian = $(this).val();
+        
+        // Gunakan fitur pencarian kolom DataTables untuk judul ujian
+        table.column(1).search(judulUjian).draw();
+      });
+      
       // Reset filter
       $('#resetFilter').on('click', function() {
         $('#filterKelas').val('');
         $('#filterMapel').val('');
+        $('#filterJudul').val('');
         // Reset semua pencarian kolom
         table.columns().search('').draw();
       });
