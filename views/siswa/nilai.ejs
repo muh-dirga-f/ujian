@@ -11,6 +11,10 @@
     href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.bootstrap4.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
 </head>
@@ -33,46 +37,14 @@
 
       <section class="content">
         <div class="container-fluid">
-          <!-- Filter Section -->
-          <div class="row mb-3">
-            <div class="col-12">
-              <div class="card">
-                <div class="card-header">
-                  <h3 class="card-title">Filter Nilai Ujian</h3>
-                </div>
-                <div class="card-body">
-                  <form action="/siswa/nilai" method="GET" class="form-inline">
-                    <div class="form-group mr-3">
-                      <label for="mapel" class="mr-2">Mata Pelajaran:</label>
-                      <select name="mapel" id="mapel" class="form-control">
-                        <option value="">Semua Mata Pelajaran</option>
-                        <% mapelList.forEach(function(mapel) { %>
-                          <option value="<%= mapel.id_mapel %>" <%= currentMapel == mapel.id_mapel ? 'selected' : '' %>>
-                            <%= mapel.nama_mapel %>
-                          </option>
-                        <% }); %>
-                      </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                      <i class="fas fa-filter"></i> Filter
-                    </button>
-                    <a href="/siswa/nilai" class="btn btn-secondary ml-2">
-                      <i class="fas fa-sync"></i> Reset
-                    </a>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          
           <div class="row">
             <div class="col-12">
               <div class="card">
                 <div class="card-header">
                   <h3 class="card-title">Daftar Nilai Ujian</h3>
                 </div>
-                <div class="card-body table-responsive p-0">
-                  <table class="table table-hover text-nowrap">
+                <div class="card-body">
+                  <table id="nilaiTable" class="table table-bordered table-striped">
                     <thead>
                       <tr>
                         <th>Judul Ujian</th>
@@ -89,7 +61,7 @@
                           <td><%= nilai.judul_ujian %></td>
                           <td><%= nilai.nama_mapel %></td>
                           <td><%= nilai.kelas %> <%= nilai.minor_kelas %></td>
-                          <td><%= new Date(nilai.waktu_mulai).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></td>
+                          <td data-order="<%= nilai.waktu_mulai %>"><%= new Date(nilai.waktu_mulai).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></td>
                           <td><%= nilai.nilai_total ? nilai.nilai_total.toFixed(2) : '-' %></td>
                           <td>
                             <a href="/siswa/nilai/download/<%= nilai.id_ujian || nilai.id_ujian_siswa %>" class="btn btn-sm btn-info">
@@ -119,8 +91,80 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+  <!-- DataTables & Plugins -->
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.bootstrap4.min.js"></script>
   <!-- AdminLTE App -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+  
+  <script>
+    $(function () {
+      // Setup DataTables
+      $('#nilaiTable').DataTable({
+        "responsive": true,
+        "lengthChange": true,
+        "autoWidth": false,
+        "language": {
+          "search": "Cari:",
+          "lengthMenu": "Tampilkan _MENU_ data per halaman",
+          "zeroRecords": "Tidak ada data yang ditemukan",
+          "info": "Menampilkan halaman _PAGE_ dari _PAGES_",
+          "infoEmpty": "Tidak ada data yang tersedia",
+          "infoFiltered": "(difilter dari _MAX_ total data)",
+          "paginate": {
+            "first": "Pertama",
+            "last": "Terakhir",
+            "next": "Selanjutnya",
+            "previous": "Sebelumnya"
+          }
+        },
+        "order": [[3, 'desc']], // Urutkan berdasarkan tanggal ujian (terbaru dulu)
+        "initComplete": function () {
+          // Tambahkan filter untuk judul ujian
+          this.api().columns(0).every(function () {
+            var column = this;
+            var select = $('<select class="form-control form-control-sm"><option value="">Semua Judul Ujian</option></select>')
+              .appendTo($(column.header()).empty())
+              .on('change', function () {
+                var val = $.fn.dataTable.util.escapeRegex(
+                  $(this).val()
+                );
+                column
+                  .search(val ? '^' + val + '$' : '', true, false)
+                  .draw();
+              });
+
+            column.data().unique().sort().each(function (d, j) {
+              select.append('<option value="' + d + '">' + d + '</option>');
+            });
+          });
+
+          // Tambahkan filter untuk mata pelajaran
+          this.api().columns(1).every(function () {
+            var column = this;
+            var select = $('<select class="form-control form-control-sm"><option value="">Semua Mata Pelajaran</option></select>')
+              .appendTo($(column.header()).empty())
+              .on('change', function () {
+                var val = $.fn.dataTable.util.escapeRegex(
+                  $(this).val()
+                );
+                column
+                  .search(val ? '^' + val + '$' : '', true, false)
+                  .draw();
+              });
+
+            column.data().unique().sort().each(function (d, j) {
+              select.append('<option value="' + d + '">' + d + '</option>');
+            });
+          });
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>
