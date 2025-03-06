@@ -45,7 +45,7 @@
                 </div>
                 <div class="card-body">
                   <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                       <div class="form-group">
                         <label>Filter Judul Ujian:</label>
                         <select id="filterJudul" class="form-control">
@@ -59,7 +59,7 @@
                         </select>
                       </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                       <div class="form-group">
                         <label>Filter Mata Pelajaran:</label>
                         <select id="filterMapel" class="form-control">
@@ -71,6 +71,14 @@
                             <option value="<%= mapel %>"><%= mapel %></option>
                           <% }); %>
                         </select>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button id="resetFilter" class="btn btn-secondary btn-block">
+                          <i class="fas fa-sync"></i> Reset
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -175,6 +183,13 @@
       $('#filterMapel').on('change', function() {
         const val = $.fn.dataTable.util.escapeRegex($(this).val());
         jadwalTable.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+      });
+      
+      // Event listener untuk tombol reset
+      $('#resetFilter').on('click', function() {
+        $('#filterJudul').val('');
+        $('#filterMapel').val('');
+        jadwalTable.search('').columns().search('').draw();
       });
     });
   </script>
