@@ -303,7 +303,7 @@ router.post('/kelas/:id_kelas/mapel/edit/:id_mapel', checkAuth, checkUserType('a
                 console.error(err);
                 return res.status(500).send('Server error');
             }
-            res.redirect(`/kelas/${id_kelas}/mapel`);
+            res.redirect(`/admin_sekolah/kelas/${id_kelas}/mapel`);
         });
 });
 
