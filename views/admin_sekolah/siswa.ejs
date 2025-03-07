@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- DataTables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
 </head>
@@ -41,8 +44,22 @@
                   </a>
                 </div>
               </div>
-              <div class="card-body table-responsive p-0">
-                <table class="table table-hover text-nowrap">
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="filterNama">Filter Nama:</label>
+                      <input type="text" class="form-control" id="filterNama" placeholder="Cari berdasarkan nama">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="filterNIS">Filter NIS:</label>
+                      <input type="text" class="form-control" id="filterNIS" placeholder="Cari berdasarkan NIS">
+                    </div>
+                  </div>
+                </div>
+                <table id="tabelSiswa" class="table table-bordered table-striped">
                   <thead>
                     <tr>
                       <th>Nama</th>
@@ -86,7 +103,39 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <!-- Bootstrap 4 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables & Plugins -->
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.2.9/js/responsive.bootstrap4.min.js"></script>
 <!-- AdminLTE App -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+
+<script>
+  $(function () {
+    var table = $('#tabelSiswa').DataTable({
+      "paging": true,
+      "lengthChange": true,
+      "searching": true,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+      "language": {
+        "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json"
+      }
+    });
+    
+    // Filter kustom untuk nama
+    $('#filterNama').on('keyup', function() {
+      table.columns(0).search(this.value).draw();
+    });
+    
+    // Filter kustom untuk NIS
+    $('#filterNIS').on('keyup', function() {
+      table.columns(1).search(this.value).draw();
+    });
+  });
+</script>
 </body>
 </html>
