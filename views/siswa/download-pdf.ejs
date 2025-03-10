@@ -442,7 +442,7 @@
           
           // Hasil akhir
           doc.setFillColor(240, 240, 240);
-          doc.rect(20, yPos, 170, 40, 'F');
+          doc.rect(20, yPos, 180, 40, 'F');
           
           doc.setFont('helvetica', 'bold');
           doc.text('Hasil Akhir:', 25, yPos + 10);
@@ -465,7 +465,7 @@
             doc.setPage(i);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'italic');
-            doc.text('Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah', 105, 285, { align: 'center' });
+            // doc.text('Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah', 105, 285, { align: 'center' });
             doc.text(`Halaman ${i} dari ${totalPages}`, 105, 292, { align: 'center' });
           }
           
