@@ -449,7 +449,7 @@
           
           // Hasil akhir
           doc.setFillColor(240, 240, 240);
-          doc.rect(20, yPos, 180, 40, 'F');
+          doc.rect(20, yPos, 180, 45, 'F');
           
           doc.setFont('helvetica', 'bold');
           doc.text('Hasil Akhir:', 25, yPos + 10);
@@ -457,13 +457,18 @@
           doc.text(`Total Soal: ${statistik.totalSoal}`, 25, yPos + 20);
           doc.text(`Total Jawaban Benar: ${statistik.totalBenar}`, 25, yPos + 30);
           
+          // Nilai akhir dengan background khusus
+          doc.setFillColor(230, 230, 230);
+          doc.rect(25, yPos + 35, 160, 10, 'F');
+          
           const nilaiAkhirText = 'Nilai Akhir: ' + statistik.totalNilaiDidapat;
           if (statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7)) {
             doc.setTextColor(0, 128, 0); // Green for passing grade
           } else {
             doc.setTextColor(255, 0, 0); // Red for below passing grade
           }
-          doc.text(nilaiAkhirText, 25, yPos + 40);
+          doc.setFont('helvetica', 'bold');
+          doc.text(nilaiAkhirText, 25, yPos + 42);
           doc.setTextColor(0, 0, 0); // Reset warna teks
           
           // Footer
