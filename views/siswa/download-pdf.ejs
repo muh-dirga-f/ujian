@@ -292,7 +292,8 @@
           
           // Fungsi untuk menambahkan teks dengan word wrap
           function addWrappedText(text, x, y, maxWidth, lineHeight) {
-            const lines = doc.splitTextToSize(text, maxWidth);
+            if (!text) return y; // Hindari error jika text undefined atau null
+            const lines = doc.splitTextToSize(String(text), maxWidth);
             doc.text(lines, x, y);
             return y + (lines.length * lineHeight);
           }
@@ -358,7 +359,7 @@
                   doc.setTextColor(isCorrect ? 0, 128, 0 : 255, 0, 0);
                 }
                 
-                const optionText = `${key}. ${value}${isCorrect ? ' ✓' : ''}`;
+                const optionText = `${key}. ${value || ''}${isCorrect ? ' ✓' : ''}`;
                 yPos = addWrappedText(optionText, 25, yPos, maxWidth - 5, 7) + 2;
                 
                 doc.setTextColor(0, 0, 0); // Reset warna teks
@@ -372,7 +373,7 @@
               
               doc.setFont('helvetica', 'bold');
               const jawabanText = `Jawaban Anda: ${item.jawaban ? 
-                `${item.jawaban}. ${item.pilihan_ganda[item.jawaban]}` : 
+                `${item.jawaban}. ${item.pilihan_ganda[item.jawaban] || ''}` : 
                 '(Tidak dijawab)'}`;
               
               doc.setTextColor(item.jawaban === item.kunci_jawaban ? 0, 128, 0 : 255, 0, 0);
@@ -390,7 +391,7 @@
               doc.text('Jawaban Anda:', 25, yPos + 5);
               doc.setFont('helvetica', 'normal');
               
-              const essayAnswer = item.jawaban || '(Tidak dijawab)';
+              const essayAnswer = item.jawaban ? String(item.jawaban) : '(Tidak dijawab)';
               yPos = addWrappedText(essayAnswer, 25, yPos + 12, maxWidth - 5, 7) + 2;
             }
             
