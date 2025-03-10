@@ -293,9 +293,16 @@
           // Fungsi untuk menambahkan teks dengan word wrap
           function addWrappedText(text, x, y, maxWidth, lineHeight) {
             if (!text) return y; // Hindari error jika text undefined atau null
-            const lines = doc.splitTextToSize(String(text), maxWidth);
-            doc.text(lines, x, y);
-            return y + (lines.length * lineHeight);
+            
+            try {
+              const textStr = String(text || '');
+              const lines = doc.splitTextToSize(textStr, maxWidth);
+              doc.text(lines, x, y);
+              return y + (lines.length * lineHeight);
+            } catch (err) {
+              console.error('Error in addWrappedText:', err);
+              return y + lineHeight; // Return next line position anyway
+            }
           }
           
           // Header
@@ -359,7 +366,9 @@
                   doc.setTextColor(isCorrect ? 0, 128, 0 : 255, 0, 0);
                 }
                 
-                const optionText = `${key}. ${value || ''}${isCorrect ? ' ✓' : ''}`;
+                let optionText = key + '. ';
+                if (value) optionText += value;
+                if (isCorrect) optionText += ' ✓';
                 yPos = addWrappedText(optionText, 25, yPos, maxWidth - 5, 7) + 2;
                 
                 doc.setTextColor(0, 0, 0); // Reset warna teks
@@ -372,9 +381,16 @@
               }
               
               doc.setFont('helvetica', 'bold');
-              const jawabanText = `Jawaban Anda: ${item.jawaban ? 
-                `${item.jawaban}. ${item.pilihan_ganda[item.jawaban] || ''}` : 
-                '(Tidak dijawab)'}`;
+              let jawabanText = 'Jawaban Anda: ';
+              
+              if (item.jawaban) {
+                jawabanText += item.jawaban + '. ';
+                if (item.pilihan_ganda[item.jawaban]) {
+                  jawabanText += item.pilihan_ganda[item.jawaban];
+                }
+              } else {
+                jawabanText += '(Tidak dijawab)';
+              }
               
               doc.setTextColor(item.jawaban === item.kunci_jawaban ? 0, 128, 0 : 255, 0, 0);
               yPos = addWrappedText(jawabanText, 25, yPos + 5, maxWidth - 5, 7) + 2;
@@ -391,7 +407,7 @@
               doc.text('Jawaban Anda:', 25, yPos + 5);
               doc.setFont('helvetica', 'normal');
               
-              const essayAnswer = item.jawaban ? String(item.jawaban) : '(Tidak dijawab)';
+              const essayAnswer = item.jawaban ? String(item.jawaban || '') : '(Tidak dijawab)';
               yPos = addWrappedText(essayAnswer, 25, yPos + 12, maxWidth - 5, 7) + 2;
             }
             
@@ -414,7 +430,7 @@
           doc.text(`Total Soal: ${statistik.totalSoal}`, 25, yPos + 20);
           doc.text(`Total Jawaban Benar: ${statistik.totalBenar}`, 25, yPos + 30);
           
-          const nilaiAkhirText = `Nilai Akhir: ${statistik.totalNilaiDidapat}`;
+          const nilaiAkhirText = 'Nilai Akhir: ' + statistik.totalNilaiDidapat;
           doc.setTextColor(statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7) ? 0, 128, 0 : 255, 0, 0);
           doc.text(nilaiAkhirText, 25, yPos + 40);
           doc.setTextColor(0, 0, 0); // Reset warna teks
