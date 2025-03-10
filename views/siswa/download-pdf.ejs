@@ -170,6 +170,7 @@
         }
         
         ujianData = await response.json();
+        console.log('Data ujian dari server:', ujianData);
         renderPreview(ujianData);
       } catch (error) {
         console.error('Error:', error);
@@ -185,6 +186,7 @@
     // Fungsi untuk menampilkan preview
     function renderPreview(data) {
       const { ujian, soal, statistik } = data;
+      console.log('Rendering preview dengan data:', { ujian, soal, statistik });
       
       let previewHtml = `
         <div class="header-preview">
@@ -277,6 +279,7 @@
       }
       
       const { ujian, soal, statistik } = ujianData;
+      console.log('Membuat PDF dengan data:', { ujian, soal, statistik });
       
       // Tampilkan loading overlay
       document.getElementById('loadingOverlay').style.display = 'flex';

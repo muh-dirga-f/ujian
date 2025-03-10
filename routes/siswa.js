@@ -296,6 +296,15 @@ router.get('/nilai/data/:id', checkAuth, checkUserType('siswa'), (req, res) => {
                 day: 'numeric'
             });
 
+            // Log data untuk debugging
+            console.log('Data ujian yang akan dikirim:', {
+                ujian,
+                totalSoal: results.length,
+                totalBenar: results.filter(r => r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban).length,
+                totalNilaiMaksimum,
+                totalNilaiDidapat
+            });
+            
             // Kirim data sebagai JSON
             res.json({
                 ujian: {
