@@ -82,6 +82,13 @@
       border: 1px solid #dee2e6;
       border-radius: 5px;
     }
+    .results-preview p:last-child {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      font-weight: bold;
+    }
   </style>
 </head>
 
@@ -267,8 +274,8 @@
           <h4>Hasil Akhir:</h4>
           <p>Total Soal: ${statistik.totalSoal}</p>
           <p>Total Jawaban Benar: ${statistik.totalBenar}</p>
-          <p class="${statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7) ? 'correct-answer' : 'incorrect-answer'}">
-            Nilai Akhir: ${statistik.totalNilaiDidapat}
+          <p class="${statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7) ? 'correct-answer' : 'incorrect-answer'}" style="padding: 10px; background-color: #f0f0f0; border-radius: 5px;">
+            <strong>Nilai Akhir: ${statistik.totalNilaiDidapat}</strong>
           </p>
         </div>
       `;
