@@ -139,14 +139,16 @@ router.get('/ujian/:id', (req, res) => {
         }
 
         const now = new Date();
+        const offsetWITA = 8 * 60; // Offset 8 jam untuk WITA
+        const localTime = new Date(now.getTime() + (offsetWITA * 60000)); // Menyesuaikan waktu dengan WITA
         const waktuMulai = new Date(ujian.waktu_mulai);
         const waktuSelesai = new Date(ujian.waktu_selesai);
 
-        if (now < waktuMulai) {
+        if (localTime < waktuMulai) {
             return res.status(403).send('Ujian belum dimulai');
         }
 
-        if (now > waktuSelesai) {
+        if (localTime > waktuSelesai) {
             return res.status(403).send('Ujian sudah berakhir');
         }
 

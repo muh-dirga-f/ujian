@@ -95,11 +95,13 @@
                           <td data-order="<%= ujian.waktu_mulai %>"><%= new Date(ujian.waktu_mulai).toLocaleString() %></td>
                           <td data-order="<%= ujian.waktu_selesai %>"><%= new Date(ujian.waktu_selesai).toLocaleString() %></td>
                           <td>
-                            <% 
+                            <%
                               const now = new Date();
+                              const offsetWITA = 8 * 60; // Offset 8 jam untuk WITA
+                              const localTime = new Date(now.getTime() + (offsetWITA * 60000)); // Menyesuaikan waktu dengan WITA
                               const mulai = new Date(ujian.waktu_mulai);
                               const selesai = new Date(ujian.waktu_selesai);
-                              if (now >= mulai && now <= selesai) {
+                              if (localTime >= mulai && now <= selesai) {
                             %>
                               <a href="/siswa/ujian/<%= ujian.id_ujian %>" class="btn btn-primary btn-sm">Mulai Ujian</a>
                             <% } else if (now < mulai) { %>
