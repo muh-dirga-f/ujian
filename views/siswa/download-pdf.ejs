@@ -375,7 +375,11 @@
                 }
                 
                 if (isSelected) {
-                  doc.setTextColor(isCorrect ? 0, 128, 0 : 255, 0, 0);
+                  if (isCorrect) {
+                    doc.setTextColor(0, 128, 0); // Green for correct
+                  } else {
+                    doc.setTextColor(255, 0, 0); // Red for incorrect
+                  }
                 }
                 
                 let optionText = key + '. ';
@@ -404,7 +408,11 @@
                 jawabanText += '(Tidak dijawab)';
               }
               
-              doc.setTextColor(item.jawaban === item.kunci_jawaban ? 0, 128, 0 : 255, 0, 0);
+              if (item.jawaban === item.kunci_jawaban) {
+                doc.setTextColor(0, 128, 0); // Green for correct
+              } else {
+                doc.setTextColor(255, 0, 0); // Red for incorrect
+              }
               yPos = addWrappedText(jawabanText, 25, yPos + 5, maxWidth - 5, 7) + 2;
               doc.setTextColor(0, 0, 0); // Reset warna teks
               
@@ -443,7 +451,11 @@
           doc.text(`Total Jawaban Benar: ${statistik.totalBenar}`, 25, yPos + 30);
           
           const nilaiAkhirText = 'Nilai Akhir: ' + statistik.totalNilaiDidapat;
-          doc.setTextColor(statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7) ? 0, 128, 0 : 255, 0, 0);
+          if (statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7)) {
+            doc.setTextColor(0, 128, 0); // Green for passing grade
+          } else {
+            doc.setTextColor(255, 0, 0); // Red for below passing grade
+          }
           doc.text(nilaiAkhirText, 25, yPos + 40);
           doc.setTextColor(0, 0, 0); // Reset warna teks
           
