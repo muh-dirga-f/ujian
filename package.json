@@ -13,7 +13,8 @@
     "express": "^4.21.0",
     "express-session": "^1.18.0",
     "html2canvas": "^1.4.1",
-    "jspdf": "^3.0.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.28",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {

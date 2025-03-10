@@ -228,11 +228,10 @@ router.post('/ujian/:id/jawab', (req, res) => {
 });
 
 // Rute untuk menyelesaikan ujian
-const pdf = require('html-pdf');
 const path = require('path');
 
-// Rute untuk mengunduh hasil ujian
-router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) => {
+// Rute untuk mengambil data hasil ujian (untuk PDF client-side)
+router.get('/nilai/data/:id', checkAuth, checkUserType('siswa'), (req, res) => {
     const ujianId = req.params.id;
     const nis = req.session.user.username;
 
@@ -250,7 +249,11 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
     `, [nis, ujianId], (err, ujian) => {
         if (err) {
             console.error(err);
-            return res.status(500).send('Server error');
+            return res.status(500).json({ error: 'Server error' });
+        }
+
+        if (!ujian) {
+            return res.status(404).json({ error: 'Data ujian tidak ditemukan' });
         }
 
         // Ambil soal dan jawaban
@@ -269,11 +272,8 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
         `, [nis, ujianId], (err, results) => {
             if (err) {
                 console.error(err);
-                return res.status(500).send('Server error');
+                return res.status(500).json({ error: 'Server error' });
             }
-
-            // Generate HTML content
-            const totalSoal = results.length;
 
             // Hitung total nilai berdasarkan bobot soal
             let totalNilaiMaksimum = 0;
@@ -288,184 +288,53 @@ router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) 
                 }
             });
 
-            // Hitung nilai akhir (skala 100)
-            const nilai = totalNilaiMaksimum > 0 ?
-                (totalNilaiDidapat / totalNilaiMaksimum) * 100 : 0;
-
-            // console.log('Debug nilai:', {
-            //     totalNilaiMaksimum,
-            //     totalNilaiDidapat,
-            //     nilai,
-            //     results: results.map(r => ({
-            //         jenis: r.jenis_soal,
-            //         bobot: r.nilai,
-            //         jawaban: r.jawaban,
-            //         kunci: r.kunci_jawaban,
-            //         benar: r.jawaban === r.kunci_jawaban
-            //     }))
-            // });
-
-            const htmlContent = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="utf-8">
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 40px; }
-                        .header { text-align: center; margin-bottom: 30px; }
-                        .info-section {
-                            display: flex;
-                            justify-content: space-between;
-                            border-top: 1px solid #ccc;
-                            border-bottom: 1px solid #ccc;
-                            padding: 20px 0;
-                            margin-bottom: 30px;
-                        }
-                        .question {
-                            margin-bottom: 30px;
-                            padding: 15px;
-                            border: 1px solid #eee;
-                            border-radius: 5px;
-                        }
-                        .options { margin-left: 20px; }
-                        .option { margin: 5px 0; }
-                        .student-answer {
-                            margin: 10px 0;
-                            padding: 10px;
-                            background-color: #f8f9fa;
-                            border-left: 4px solid #6c757d;
-                        }
-                        .essay-answer {
-                            margin-left: 20px;
-                            margin-top: 10px;
-                        }
-                        .correct {
-                            color: green;
-                            border-left-color: green !important;
-                        }
-                        .incorrect {
-                            color: red;
-                            border-left-color: red !important;
-                        }
-                        .answer-key {
-                            margin: 10px 0;
-                            padding: 10px;
-                            background-color: #e9ecef;
-                            border-left: 4px solid #28a745;
-                        }
-                        .results {
-                            margin-top: 30px;
-                            padding: 20px;
-                            background-color: #f9f9f9;
-                            border: 1px solid #dee2e6;
-                            border-radius: 5px;
-                        }
-                        .footer {
-                            text-align: center;
-                            font-size: 12px;
-                            color: #666;
-                            margin-top: 50px;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>HASIL UJIAN SEKOLAH</h1>
-                        <h2>${ujian.nama_sekolah}</h2>
-                    </div>
-
-                    <div class="info-section">
-                        <div class="exam-info">
-                            <p><strong>Mata Pelajaran:</strong> ${ujian.nama_mapel}</p>
-                            <p><strong>Kelas:</strong> ${ujian.kelas} ${ujian.minor_kelas}</p>
-                            <p><strong>Tanggal:</strong> ${new Date(ujian.waktu_mulai).toLocaleDateString('id-ID', {
+            // Format tanggal
+            const tanggalUjian = new Date(ujian.waktu_mulai).toLocaleDateString('id-ID', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
-            })}</p>
-                        </div>
-                        <div class="student-info">
-                            <p><strong>Nama:</strong> ${ujian.nama_siswa}</p>
-                            <p><strong>NIS:</strong> ${ujian.nis}</p>
-                        </div>
-                    </div>
+            });
 
-                    ${results.map((row, index) => `
-                        <div class="question">
-                            <p><strong>Soal ${index + 1}:</strong></p>
-                            <p>${row.soal}</p>
-                            ${row.jenis_soal === 'pilihan_ganda'
-                    ? `<div class="options">
-                                    ${Object.entries(JSON.parse(row.pilihan_ganda)).map(([key, value]) => `
-                                        <p class="option ${key === row.jawaban ? (key === row.kunci_jawaban ? 'correct' : 'incorrect') : ''} ${key === row.kunci_jawaban ? 'answer-key' : ''}">
-                                            ${key}. ${value}
-                                        </p>
-                                    `).join('')}
-                                    <p class="student-answer ${row.jawaban === row.kunci_jawaban ? 'correct' : 'incorrect'}">
-                                        <strong>Jawaban Anda:</strong> ${row.jawaban ? `${row.jawaban}. ${JSON.parse(row.pilihan_ganda)[row.jawaban]}` : '(Tidak dijawab)'}
-                                    </p>
-                                    <p class="answer-key">
-                                        <strong>Kunci Jawaban:</strong> ${row.kunci_jawaban}. ${JSON.parse(row.pilihan_ganda)[row.kunci_jawaban]}
-                                    </p>
-                                   </div>`
-                    : `<div class="essay-answer">
-                                    <p class="student-answer">
-                                        <strong>Jawaban Anda:</strong><br>
-                                        ${row.jawaban || '(Tidak dijawab)'}
-                                    </p>
-                                   </div>`
-                }
-                        </div>
-                    `).join('')}
-
-                    <div class="results">
-                        <h3>Hasil Akhir:</h3>
-                        <p>Total Soal: ${totalSoal}</p>
-                        <p>Total Jawaban Benar: ${results.filter(r =>
-                    r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban
-                ).length}</p>
-                        <p class="${totalNilaiDidapat >= (totalNilaiMaksimum * 0.7) ? 'correct' : 'incorrect'}">
-                            Nilai Akhir: ${totalNilaiDidapat}
-                        </p>
-                    </div>
-
-                    <!--div class="footer">
-                        Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah
-                    </div-->
-                </body>
-                </html>
-            `;
-
-            // PDF Configuration
-            const options = {
-                format: 'A4',
-                border: {
-                    top: '20mm',
-                    right: '20mm',
-                    bottom: '20mm',
-                    left: '20mm'
+            // Kirim data sebagai JSON
+            res.json({
+                ujian: {
+                    ...ujian,
+                    tanggal_ujian: tanggalUjian
                 },
-                header: {
-                    height: '15mm'
-                },
-                footer: {
-                    height: '15mm'
+                soal: results.map(row => {
+                    // Parse pilihan_ganda jika ada
+                    let pilihanGanda = {};
+                    if (row.pilihan_ganda) {
+                        try {
+                            pilihanGanda = JSON.parse(row.pilihan_ganda);
+                        } catch (e) {
+                            console.error('Error parsing pilihan_ganda:', e);
+                        }
+                    }
+                    
+                    return {
+                        ...row,
+                        pilihan_ganda: pilihanGanda
+                    };
+                }),
+                statistik: {
+                    totalSoal: results.length,
+                    totalBenar: results.filter(r => r.jenis_soal === 'pilihan_ganda' && r.jawaban === r.kunci_jawaban).length,
+                    totalNilaiMaksimum,
+                    totalNilaiDidapat
                 }
-            };
-
-            // Generate PDF
-            pdf.create(htmlContent, options).toBuffer((err, buffer) => {
-                if (err) {
-                    console.error('Error generating PDF:', err);
-                    return res.status(500).send('Error generating PDF');
-                }
-
-                res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', `attachment; filename=hasil-ujian-${ujian.nama_mapel.replace(/\s+/g, '-')}-${ujian.nis}.pdf`);
-                res.send(buffer);
             });
         });
+    });
+});
+
+// Rute untuk halaman download PDF (client-side)
+router.get('/nilai/download/:id', checkAuth, checkUserType('siswa'), (req, res) => {
+    const ujianId = req.params.id;
+    res.render('siswa/download-pdf', { 
+        user: req.session.user,
+        ujianId: ujianId
     });
 });
 

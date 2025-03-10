@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Download Hasil Ujian - Sistem Ujian Sekolah</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- jsPDF AutoTable plugin -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      flex-direction: column;
+    }
+    .preview-container {
+      background-color: #f4f6f9;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    #pdfPreview {
+      width: 100%;
+      min-height: 500px;
+      border: 1px solid #ddd;
+      background-color: white;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .header-preview {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .info-section-preview {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #ccc;
+      border-bottom: 1px solid #ccc;
+      padding: 15px 0;
+      margin-bottom: 20px;
+    }
+    .question-preview {
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #eee;
+      border-radius: 5px;
+    }
+    .options-preview {
+      margin-left: 15px;
+    }
+    .correct-answer {
+      color: green;
+    }
+    .incorrect-answer {
+      color: red;
+    }
+    .results-preview {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+  <div class="wrapper">
+    <%- include('partials/navigation') %>
+
+    <div class="content-wrapper">
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1>Download Hasil Ujian</h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">Hasil Ujian</h3>
+                </div>
+                <div class="card-body">
+                  <div class="preview-container">
+                    <h4>Preview Dokumen</h4>
+                    <div id="pdfPreview">
+                      <div class="text-center">
+                        <i class="fas fa-spinner fa-spin fa-3x"></i>
+                        <p>Memuat data ujian...</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <button id="downloadPdfBtn" class="btn btn-primary btn-lg">
+                      <i class="fas fa-download"></i> Download PDF
+                    </button>
+                    <a href="/siswa/nilai" class="btn btn-secondary btn-lg ml-2">
+                      <i class="fas fa-arrow-left"></i> Kembali
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="main-footer">
+      <div class="float-right d-none d-sm-inline">
+        Sistem Ujian Sekolah
+      </div>
+    </footer>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+    <h3>Membuat PDF...</h3>
+    <p>Mohon tunggu sebentar</p>
+  </div>
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- Bootstrap 4 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+  <!-- AdminLTE App -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+
+  <script>
+    // Menggunakan jsPDF
+    const { jsPDF } = window.jspdf;
+    
+    let ujianData = null;
+    
+    // Fungsi untuk memuat data ujian
+    async function loadUjianData() {
+      try {
+        const response = await fetch('/siswa/nilai/data/<%= ujianId %>');
+        if (!response.ok) {
+          throw new Error('Gagal memuat data ujian');
+        }
+        
+        ujianData = await response.json();
+        renderPreview(ujianData);
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('pdfPreview').innerHTML = `
+          <div class="alert alert-danger">
+            <h5><i class="icon fas fa-ban"></i> Error!</h5>
+            Gagal memuat data ujian. ${error.message}
+          </div>
+        `;
+      }
+    }
+    
+    // Fungsi untuk menampilkan preview
+    function renderPreview(data) {
+      const { ujian, soal, statistik } = data;
+      
+      let previewHtml = `
+        <div class="header-preview">
+          <h2>HASIL UJIAN SEKOLAH</h2>
+          <h3>${ujian.nama_sekolah}</h3>
+        </div>
+        
+        <div class="info-section-preview">
+          <div class="exam-info">
+            <p><strong>Mata Pelajaran:</strong> ${ujian.nama_mapel}</p>
+            <p><strong>Kelas:</strong> ${ujian.kelas} ${ujian.minor_kelas}</p>
+            <p><strong>Tanggal:</strong> ${ujian.tanggal_ujian}</p>
+          </div>
+          <div class="student-info">
+            <p><strong>Nama:</strong> ${ujian.nama_siswa}</p>
+            <p><strong>NIS:</strong> ${ujian.nis}</p>
+          </div>
+        </div>
+      `;
+      
+      // Render soal-soal
+      soal.forEach((item, index) => {
+        previewHtml += `
+          <div class="question-preview">
+            <p><strong>Soal ${index + 1}:</strong></p>
+            <p>${item.soal}</p>
+        `;
+        
+        if (item.jenis_soal === 'pilihan_ganda') {
+          previewHtml += '<div class="options-preview">';
+          
+          // Render pilihan jawaban
+          Object.entries(item.pilihan_ganda).forEach(([key, value]) => {
+            const isCorrect = key === item.kunci_jawaban;
+            const isSelected = key === item.jawaban;
+            let optionClass = '';
+            
+            if (isSelected) {
+              optionClass = isCorrect ? 'correct-answer' : 'incorrect-answer';
+            }
+            
+            previewHtml += `
+              <p class="${optionClass}">
+                ${key}. ${value} ${isCorrect ? '✓' : ''}
+              </p>
+            `;
+          });
+          
+          // Jawaban siswa
+          const jawabanClass = item.jawaban === item.kunci_jawaban ? 'correct-answer' : 'incorrect-answer';
+          previewHtml += `
+            <p class="${jawabanClass}">
+              <strong>Jawaban Anda:</strong> 
+              ${item.jawaban ? `${item.jawaban}. ${item.pilihan_ganda[item.jawaban]}` : '(Tidak dijawab)'}
+            </p>
+          `;
+          
+          previewHtml += '</div>';
+        } else if (item.jenis_soal === 'essay') {
+          previewHtml += `
+            <div class="options-preview">
+              <p><strong>Jawaban Anda:</strong><br>${item.jawaban || '(Tidak dijawab)'}</p>
+            </div>
+          `;
+        }
+        
+        previewHtml += '</div>';
+      });
+      
+      // Render hasil akhir
+      previewHtml += `
+        <div class="results-preview">
+          <h4>Hasil Akhir:</h4>
+          <p>Total Soal: ${statistik.totalSoal}</p>
+          <p>Total Jawaban Benar: ${statistik.totalBenar}</p>
+          <p class="${statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7) ? 'correct-answer' : 'incorrect-answer'}">
+            Nilai Akhir: ${statistik.totalNilaiDidapat}
+          </p>
+        </div>
+      `;
+      
+      document.getElementById('pdfPreview').innerHTML = previewHtml;
+    }
+    
+    // Fungsi untuk membuat PDF
+    function generatePDF() {
+      if (!ujianData) {
+        alert('Data ujian belum dimuat. Silakan coba lagi.');
+        return;
+      }
+      
+      const { ujian, soal, statistik } = ujianData;
+      
+      // Tampilkan loading overlay
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      
+      // Buat PDF dengan jsPDF
+      setTimeout(() => {
+        try {
+          const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+          
+          // Fungsi untuk menambahkan teks dengan word wrap
+          function addWrappedText(text, x, y, maxWidth, lineHeight) {
+            const lines = doc.splitTextToSize(text, maxWidth);
+            doc.text(lines, x, y);
+            return y + (lines.length * lineHeight);
+          }
+          
+          // Header
+          doc.setFontSize(16);
+          doc.setFont('helvetica', 'bold');
+          doc.text('HASIL UJIAN SEKOLAH', 105, 20, { align: 'center' });
+          
+          doc.setFontSize(14);
+          doc.text(ujian.nama_sekolah, 105, 28, { align: 'center' });
+          
+          // Garis pemisah
+          doc.setLineWidth(0.5);
+          doc.line(20, 35, 190, 35);
+          
+          // Informasi ujian
+          doc.setFontSize(11);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`Mata Pelajaran: ${ujian.nama_mapel}`, 20, 45);
+          doc.text(`Kelas: ${ujian.kelas} ${ujian.minor_kelas}`, 20, 52);
+          doc.text(`Tanggal: ${ujian.tanggal_ujian}`, 20, 59);
+          
+          // Informasi siswa
+          doc.text(`Nama: ${ujian.nama_siswa}`, 130, 45);
+          doc.text(`NIS: ${ujian.nis}`, 130, 52);
+          
+          // Garis pemisah
+          doc.line(20, 65, 190, 65);
+          
+          // Soal dan jawaban
+          let yPos = 75;
+          const pageWidth = doc.internal.pageSize.getWidth();
+          const margin = 20;
+          const maxWidth = pageWidth - (margin * 2);
+          
+          soal.forEach((item, index) => {
+            // Cek apakah perlu halaman baru
+            if (yPos > 250) {
+              doc.addPage();
+              yPos = 20;
+            }
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Soal ${index + 1}:`, 20, yPos);
+            doc.setFont('helvetica', 'normal');
+            
+            yPos = addWrappedText(item.soal, 20, yPos + 7, maxWidth, 7) + 5;
+            
+            if (item.jenis_soal === 'pilihan_ganda') {
+              // Pilihan jawaban
+              Object.entries(item.pilihan_ganda).forEach(([key, value]) => {
+                const isCorrect = key === item.kunci_jawaban;
+                const isSelected = key === item.jawaban;
+                
+                // Cek apakah perlu halaman baru
+                if (yPos > 270) {
+                  doc.addPage();
+                  yPos = 20;
+                }
+                
+                if (isSelected) {
+                  doc.setTextColor(isCorrect ? 0, 128, 0 : 255, 0, 0);
+                }
+                
+                const optionText = `${key}. ${value}${isCorrect ? ' ✓' : ''}`;
+                yPos = addWrappedText(optionText, 25, yPos, maxWidth - 5, 7) + 2;
+                
+                doc.setTextColor(0, 0, 0); // Reset warna teks
+              });
+              
+              // Jawaban siswa
+              if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+              }
+              
+              doc.setFont('helvetica', 'bold');
+              const jawabanText = `Jawaban Anda: ${item.jawaban ? 
+                `${item.jawaban}. ${item.pilihan_ganda[item.jawaban]}` : 
+                '(Tidak dijawab)'}`;
+              
+              doc.setTextColor(item.jawaban === item.kunci_jawaban ? 0, 128, 0 : 255, 0, 0);
+              yPos = addWrappedText(jawabanText, 25, yPos + 5, maxWidth - 5, 7) + 2;
+              doc.setTextColor(0, 0, 0); // Reset warna teks
+              
+            } else if (item.jenis_soal === 'essay') {
+              // Jawaban essay
+              if (yPos > 270) {
+                doc.addPage();
+                yPos = 20;
+              }
+              
+              doc.setFont('helvetica', 'bold');
+              doc.text('Jawaban Anda:', 25, yPos + 5);
+              doc.setFont('helvetica', 'normal');
+              
+              const essayAnswer = item.jawaban || '(Tidak dijawab)';
+              yPos = addWrappedText(essayAnswer, 25, yPos + 12, maxWidth - 5, 7) + 2;
+            }
+            
+            yPos += 10; // Spasi antar soal
+          });
+          
+          // Cek apakah perlu halaman baru untuk hasil akhir
+          if (yPos > 240) {
+            doc.addPage();
+            yPos = 20;
+          }
+          
+          // Hasil akhir
+          doc.setFillColor(240, 240, 240);
+          doc.rect(20, yPos, 170, 40, 'F');
+          
+          doc.setFont('helvetica', 'bold');
+          doc.text('Hasil Akhir:', 25, yPos + 10);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`Total Soal: ${statistik.totalSoal}`, 25, yPos + 20);
+          doc.text(`Total Jawaban Benar: ${statistik.totalBenar}`, 25, yPos + 30);
+          
+          const nilaiAkhirText = `Nilai Akhir: ${statistik.totalNilaiDidapat}`;
+          doc.setTextColor(statistik.totalNilaiDidapat >= (statistik.totalNilaiMaksimum * 0.7) ? 0, 128, 0 : 255, 0, 0);
+          doc.text(nilaiAkhirText, 25, yPos + 40);
+          doc.setTextColor(0, 0, 0); // Reset warna teks
+          
+          // Footer
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'italic');
+            doc.text('Dokumen ini digenerate secara otomatis oleh Sistem Ujian Sekolah', 105, 285, { align: 'center' });
+            doc.text(`Halaman ${i} dari ${totalPages}`, 105, 292, { align: 'center' });
+          }
+          
+          // Simpan PDF
+          const filename = `hasil-ujian-${ujian.nama_mapel.replace(/\s+/g, '-')}-${ujian.nis}.pdf`;
+          doc.save(filename);
+          
+        } catch (error) {
+          console.error('Error generating PDF:', error);
+          alert('Terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+        } finally {
+          // Sembunyikan loading overlay
+          document.getElementById('loadingOverlay').style.display = 'none';
+        }
+      }, 500); // Delay sedikit untuk memastikan loading overlay muncul
+    }
+    
+    // Event listener untuk tombol download
+    document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
+    
+    // Load data saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', loadUjianData);
+  </script>
+</body>
+
+</html>
